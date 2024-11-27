@@ -15,7 +15,7 @@ python -u run.py \
   --label_len 48 \
   --pred_len 96 \
   --e_layers 1 \
-  --d_layers 1 \
+  --d_layers 2 \
   --factor 3 \
   --enc_in 7 \
   --dec_in 7 \
@@ -41,14 +41,14 @@ python -u run.py \
   --label_len 48 \
   --pred_len 192 \
   --e_layers 3 \
-  --d_layers 1 \
+  --d_layers 2 \
   --factor 3 \
   --enc_in 7 \
   --dec_in 7 \
   --c_out 7 \
   --des 'Exp' \
   --n_heads 2 \
-  --batch_size 128 \
+  --batch_size 32 \
   --itr 1 \
   --d_lstm 128 \
   --lstm_layers 2 \
@@ -67,14 +67,14 @@ python -u run.py \
   --label_len 48 \
   --pred_len 336 \
   --e_layers 1 \
-  --d_layers 1 \
+  --d_layers 2 \
   --factor 3 \
   --enc_in 7 \
   --dec_in 7 \
   --c_out 7 \
   --des 'Exp' \
   --n_heads 4 \
-  --batch_size 128 \
+  --batch_size 32 \
   --itr 1 \
   --d_lstm 128 \
   --lstm_layers 2 \
@@ -93,14 +93,14 @@ python -u run.py \
   --label_len 48 \
   --pred_len 720 \
   --e_layers 3 \
-  --d_layers 1 \
+  --d_layers 2 \
   --factor 3 \
   --enc_in 7 \
   --dec_in 7 \
   --c_out 7 \
   --des 'Exp' \
   --n_heads 4 \
-  --batch_size 128 \
+  --batch_size 32 \
   --itr 1 \
   --d_lstm 128 \
   --lstm_layers 2 \

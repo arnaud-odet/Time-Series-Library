@@ -5,14 +5,19 @@ import numpy as np
 
 
  
-class LSTransformer(nn.Module):
+class Model(nn.Module):
     
     def __init__(self, configs):
         
         super().__init__()
+        self.task_name = configs.task_name
+        self.seq_len = configs.seq_len
+        self.pred_len = configs.pred_len
+        self.c_out = configs.c_out
         
         # Model Architecture
         self.skip_connections = configs.skip_co        
+        self.layer_norm = configs.use_norm
         self.dropout = nn.Dropout(configs.dropout)
         self.layer_norm_module_list = nn.ModuleList()
         self.skip_connections_module = nn.ModuleList()
@@ -49,10 +54,8 @@ class LSTransformer(nn.Module):
                 self.layer_norm_module_list.append(nn.LayerNorm(configs.d_fc))        
         
         ## Step 4: final output layer
-        self.output_layer = nn.Linear(configs.d_fc, configs.c_out)
+        self.output_layer = nn.Linear(configs.d_fc, self.c_out)
 
-        ## Step 5: Sending the model to the device 
-        self.to(self.device)
 
     def forecast(self, x_enc, x_mark_enc, x_dec, x_mark_dec):
         
@@ -82,8 +85,9 @@ class LSTransformer(nn.Module):
                 x_enc = self.layer_norm_module_list[i+len(self.lstm)](x_enc)
             x_enc = self.dropout(x_enc)  
             x_enc = F.relu(x_enc) 
+
         x_enc = self.output_layer(x_enc)  # Shape: (batch_size, output_len * n_output_feature)
-        x_enc = x_enc.view(batch_size, self.output_len, self.output_dim)     
+        x_enc = x_enc.view(batch_size, self.pred_len, self.c_out)     
         return x_enc
    
     def forward(self, x_enc, x_mark_enc, x_dec, x_mark_dec, mask=None):

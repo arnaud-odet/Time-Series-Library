@@ -37,6 +37,10 @@ def print_args(args):
     print(f'  {"Moving Avg:":<20}{args.moving_avg:<20}{"Factor:":<20}{args.factor:<20}')
     print(f'  {"Distil:":<20}{args.distil:<20}{"Dropout:":<20}{args.dropout:<20}')
     print(f'  {"Embed:":<20}{args.embed:<20}{"Activation:":<20}{args.activation:<20}')
+    # LSTransformer added
+    print(f'  {"Skip connections:":<20}{args.skip_co:<20}{"Num d LSTM:":<20}{args.d_lstm:<20}')
+    print(f'  {"d FC:":<20}{args.d_fc:<20}{"LSTM layers:":<20}{args.lstm_layers:<20}')
+    
     print()
 
     print("\033[1m" + "Run Parameters" + "\033[0m")

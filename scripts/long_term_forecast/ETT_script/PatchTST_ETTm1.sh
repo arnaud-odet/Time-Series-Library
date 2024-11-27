@@ -1,4 +1,4 @@
-export CUDA_VISIBLE_DEVICES=4
+#export CUDA_VISIBLE_DEVICES=4
 
 model_name=PatchTST
 
@@ -14,7 +14,7 @@ python -u run.py \
   --seq_len 96 \
   --label_len 48 \
   --pred_len 96 \
-  --e_layers 1 \
+  --e_layers 3 \
   --d_layers 1 \
   --factor 3 \
   --enc_in 7 \
@@ -60,7 +60,7 @@ python -u run.py \
   --seq_len 96 \
   --label_len 48 \
   --pred_len 336 \
-  --e_layers 1 \
+  --e_layers 3 \
   --d_layers 1 \
   --factor 3 \
   --enc_in 7 \
