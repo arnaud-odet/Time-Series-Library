@@ -83,7 +83,14 @@ if __name__ == '__main__':
                         help='down sampling method, only support avg, max, conv')
     parser.add_argument('--seg_len', type=int, default=48,
                         help='the length of segmen-wise iteration of SegRNN')
+    
+    # LST-Transformer added
+    parser.add_argument('--skip_co', type=bool, default=True, help='use skip connections')
+    parser.add_argument('--d_lstm', type=int, default=128, help='dimension of LSTM encoder layers')
+    parser.add_argument('--lstm_layers', type=int, default=2, help='num of LSTM encoder layers')    
+    parser.add_argument('--d_fc', type=int, default=128, help='dimention of Fully Connected decoder layer')    
 
+    
     # optimization
     parser.add_argument('--num_workers', type=int, default=10, help='data loader num workers')
     parser.add_argument('--itr', type=int, default=1, help='experiments times')
