@@ -12,6 +12,7 @@ import time
 import warnings
 import numpy as np
 import pandas
+from utils.log import log
 
 warnings.filterwarnings('ignore')
 
@@ -230,6 +231,15 @@ class Exp_Short_Term_Forecast(Exp_Basic):
             print('mape:', mape)
             print('mase:', mase)
             print('owa:', owa_results)
+            
+            # Logging
+            metrics = {'avg_smape': smape_results['Average'],
+                       'avg_mape': mape['Average'], 
+                       'avg_mase': mase['Average'], 
+                       'avg_owa': owa_results['Average']}
+            log(metrics=metrics, args = self.args)
+
+
         else:
             print('After all 6 tasks are finished, you can calculate the averaged index')
         return
