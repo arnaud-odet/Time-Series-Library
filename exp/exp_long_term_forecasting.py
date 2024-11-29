@@ -265,7 +265,14 @@ class Exp_Long_Term_Forecast(Exp_Basic):
         np.save(folder_path + 'true.npy', trues)
         
         # logging
-        metrics = {'mae': mae, 'mse': mse, 'rmse': rmse, 'mape': mape, 'mspe': mspe}
+        trainable_param_count = sum(p.numel() for p in self.model.parameters() if p.requires_grad)
+        non_trainable_param_count = sum(p.numel() for p in self.model.parameters() if not p.requires_grad)
+        non_trainable_param_count += sum(b.numel() for b in self.model.buffers())
+        metrics = {'nb_params':trainable_param_count+ non_trainable_param_count, 
+                   'nb_tr_params':trainable_param_count,
+                   'nb_nontr_params':non_trainable_param_count,
+                   'mae': mae, 'mse': mse, 'rmse': rmse, 'mape': mape, 'mspe': mspe}
+        
         log(metrics=metrics, args = self.args)
 
         return

@@ -233,10 +233,16 @@ class Exp_Short_Term_Forecast(Exp_Basic):
             print('owa:', owa_results)
             
             # Logging
-            metrics = {'avg_smape': smape_results['Average'],
-                       'avg_mape': mape['Average'], 
-                       'avg_mase': mase['Average'], 
-                       'avg_owa': owa_results['Average']}
+            trainable_param_count = sum(p.numel() for p in self.model.parameters() if p.requires_grad)
+            non_trainable_param_count = sum(p.numel() for p in self.model.parameters() if not p.requires_grad)
+            non_trainable_param_count += sum(b.numel() for b in self.model.buffers())
+            metrics = {'nb_params':trainable_param_count+ non_trainable_param_count, 
+                    'nb_tr_params':trainable_param_count,
+                    'nb_nontr_params':non_trainable_param_count,
+                    'avg_smape': smape_results['Average'],
+                    'avg_mape': mape['Average'], 
+                    'avg_mase': mase['Average'], 
+                    'avg_owa': owa_results['Average']}
             log(metrics=metrics, args = self.args)
 
 

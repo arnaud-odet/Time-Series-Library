@@ -1,9 +1,8 @@
 import os
 import torch
-from models import Autoformer, Transformer, TimesNet, Nonstationary_Transformer, DLinear, FEDformer, \
+from models import Autoformer, LSTransformer, Transformer, TimesNet, Nonstationary_Transformer, DLinear, FEDformer, \
     Informer, LightTS, Reformer, ETSformer, Pyraformer, PatchTST, MICN, Crossformer, FiLM, iTransformer, \
-    Koopa, TiDE, FreTS, TimeMixer, TSMixer, SegRNN, MambaSimple, TemporalFusionTransformer, SCINet, PAttn, TimeXer, \
-    LSTtransformer
+    Koopa, TiDE, FreTS, TimeMixer, TSMixer, SegRNN, MambaSimple, TemporalFusionTransformer, SCINet, PAttn, TimeXer
 
 
 class Exp_Basic(object):
@@ -37,7 +36,7 @@ class Exp_Basic(object):
             "SCINet": SCINet,
             'PAttn': PAttn,
             'TimeXer': TimeXer,
-            'LSTransformer' : LSTtransformer
+            'LSTransformer' : LSTransformer
         }
         if args.model == 'Mamba':
             print('Please make sure you have successfully installed mamba_ssm')
