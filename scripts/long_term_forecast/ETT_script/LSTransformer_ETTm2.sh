@@ -25,8 +25,8 @@ dropout=0.25
 learning_rate=0.001
 optimizer=adamw
 wd=0.05
-train_epochs=400
-patience=8
+train_epochs=10
+patience=3
 
 python -u run.py \
   --task_name $task_name \
