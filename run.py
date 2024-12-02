@@ -90,7 +90,12 @@ if __name__ == '__main__':
     parser.add_argument('--lstm_layers', type=int, default=2, help='num of LSTM encoder layers')    
     parser.add_argument('--d_fc', type=int, default=128, help='dimention of Fully Connected decoder layer')    
     parser.add_argument('--optimizer', type=str, default='adam', help='Optimizer')    
-    parser.add_argument('--wd', type=float, default=0, help='Weight decay')   
+    parser.add_argument('--wd', type=float, default=0, help='Weight decay')  
+    parser.add_argument('--input_features', type=str, default='V', 
+                        help='Input feature types for USC data, can be either V (Velocity) or P (Position)')  
+    parser.add_argument('--use_action_progress', type=bool, default=False, help='Use or not the action progress in inputs')  
+    parser.add_argument('--use_offense', type=bool, default=False, help='Use or not the offense boolean in inputs')  
+ 
 
     
     # optimization

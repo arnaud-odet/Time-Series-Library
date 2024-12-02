@@ -750,95 +750,77 @@ class UEAloader(Dataset):
 
 class USC_dataset(Dataset): # WIP
     
-    def __init__(self, args, root_path, flag='train', size=None,
-                 features='S', data_path='ETTm1.csv',
-                 target='OT', scale=True, timeenc=0, freq='t', seasonal_patterns=None):
-        # size [seq_len, label_len, pred_len]
+    def __init__(self, args, flag:str='train'):
         self.args = args
-        # info
-        if size == None:
-            self.seq_len = 24 * 4 * 4
-            self.label_len = 24 * 4
-            self.pred_len = 24 * 4
-        else:
-            self.seq_len = size[0]
-            self.label_len = size[1]
-            self.pred_len = size[2]
+        self.root_path = args.root_path
+        self.X_filename = f'PVTO_seq{args.seq_len}tar{args.seq_len}_X.npy'
+        self.y_filename = f'PVTO_seq{args.seq_len}tar{args.seq_len}_X.npy'
+        self.input_features = args.input_features
+        self.use_action_progress = args.use_action_progress
+        self.use_offense = args.use_offense 
+        
         # init
         assert flag in ['train', 'test', 'val']
         type_map = {'train': 0, 'val': 1, 'test': 2}
         self.set_type = type_map[flag]
 
-        self.features = features
-        self.target = target
-        self.scale = scale
-        self.timeenc = timeenc
-        self.freq = freq
-
-        self.root_path = root_path
-        self.data_path = data_path
         self.__read_data__()
 
     def __read_data__(self):
         self.scaler = StandardScaler()
-        df_raw = pd.read_csv(os.path.join(self.root_path,
-                                          self.data_path))
+        
+        self.data_x = np.load(os.path.joinn(self.root_path, self.X_filename))
+        self.data_y = np.load(os.path.joinn(self.root_path, self.y_filename))
 
-        border1s = [0, 12 * 30 * 24 * 4 - self.seq_len, 12 * 30 * 24 * 4 + 4 * 30 * 24 * 4 - self.seq_len]
-        border2s = [12 * 30 * 24 * 4, 12 * 30 * 24 * 4 + 4 * 30 * 24 * 4, 12 * 30 * 24 * 4 + 8 * 30 * 24 * 4]
-        border1 = border1s[self.set_type]
-        border2 = border2s[self.set_type]
+        # TDO : makes this parametrizable
+        train_share, val_share, test_share = 0.6, 0.2, 0.2 
+        n = self.data_x.shape[0]
 
-        if self.features == 'M' or self.features == 'MS':
-            cols_data = df_raw.columns[1:]
-            df_data = df_raw[cols_data]
-        elif self.features == 'S':
-            df_data = df_raw[[self.target]]
+        split_indices = [0 , int(np.floor(n * train_share)), int(np.floor(n * (train_share + val_share))), n] 
+        
+        base_mask = [False, self.use_action_progress, self.use_offense]
+        x_coords = base_mask + [i %4 == 3 for i in range(3, self.data_x.shape[2])]
+        y_coords = base_mask + [i %4 == 0 for i in range(3, self.data_x.shape[2])]
+        vx_coords = base_mask + [i %4 == 1 for i in range(3, self.data_x.shape[2])]
+        vy_coords = base_mask + [i %4 == 2 for i in range(3, self.data_x.shape[2])]
+        if self.input_featues == 'V':
+            mask = [x or y for x,y in zip(vx_coords,vy_coords)]
+        else :
+            mask = [x or y for x,y in zip(x_coords,y_coords)]
+
+                              
+        if self.features == 'M': # multivariate precicts multivariate
+            self.data_x = self.data_x[:,:,mask]
+            self.data_y = self.data_y[:,:,mask]
+        elif self.features == 'MS' : # multivariate precicts univariate
+            self.data_x = self.data_x[:,:,mask]
+            self.data_y = np.expand_dims(self.data_y[:,:,1], np.newaxis)      
+        elif self.features == 'S': # univariate precicts univariate
+            self.data_x = np.expand_dims(self.data_x[:,:,1], np.newaxis)
+            self.data_y = np.expand_dims(self.data_y[:,:,1], np.newaxis)
 
         if self.scale:
-            train_data = df_data[border1s[0]:border2s[0]]
+            train_data = self.data_x[split_indices[0] : split_indices[1]]
+            if self.features == 'M' :
+                train_data = np.concat([train_data, self.data_x[split_indices[0] : split_indices[1]]], axis = 1)
             self.scaler.fit(train_data.values)
-            data = self.scaler.transform(df_data.values)
-        else:
-            data = df_data.values
+            self.data_x = self.scaler.transform(self.data_x.values)
+            if self.features == 'M' :
+                self.data_y = self.scaler.transform(self.data_y.values)
 
-        df_stamp = df_raw[['date']][border1:border2]
-        df_stamp['date'] = pd.to_datetime(df_stamp.date)
-        if self.timeenc == 0:
-            df_stamp['month'] = df_stamp.date.apply(lambda row: row.month, 1)
-            df_stamp['day'] = df_stamp.date.apply(lambda row: row.day, 1)
-            df_stamp['weekday'] = df_stamp.date.apply(lambda row: row.weekday(), 1)
-            df_stamp['hour'] = df_stamp.date.apply(lambda row: row.hour, 1)
-            df_stamp['minute'] = df_stamp.date.apply(lambda row: row.minute, 1)
-            df_stamp['minute'] = df_stamp.minute.map(lambda x: x // 15)
-            data_stamp = df_stamp.drop(['date'], 1).values
-        elif self.timeenc == 1:
-            data_stamp = time_features(pd.to_datetime(df_stamp['date'].values), freq=self.freq)
-            data_stamp = data_stamp.transpose(1, 0)
 
-        self.data_x = data[border1:border2]
-        self.data_y = data[border1:border2]
+        self.data_x = self.data_x[split_indices[self.set_type] : split_indices[self.set_type +1]]
+        self.data_y = self.data_y[split_indices[self.set_type] : split_indices[self.set_type +1]]
 
-        if self.set_type == 0 and self.args.augmentation_ratio > 0:
-            self.data_x, self.data_y, augmentation_tags = run_augmentation_single(self.data_x, self.data_y, self.args)
-
-        self.data_stamp = data_stamp
 
     def __getitem__(self, index):
-        s_begin = index
-        s_end = s_begin + self.seq_len
-        r_begin = s_end - self.label_len
-        r_end = r_begin + self.label_len + self.pred_len
+        seq_x = self.data_x[index]
+        seq_y = self.data_y[index]
 
-        seq_x = self.data_x[s_begin:s_end]
-        seq_y = self.data_y[r_begin:r_end]
-        seq_x_mark = self.data_stamp[s_begin:s_end]
-        seq_y_mark = self.data_stamp[r_begin:r_end]
-
-        return seq_x, seq_y, seq_x_mark, seq_y_mark
+        return seq_x, seq_y, None, None
 
     def __len__(self):
-        return len(self.data_x) - self.seq_len - self.pred_len + 1
+        return len(self.data_x)
 
     def inverse_transform(self, data):
         return self.scaler.inverse_transform(data)    
