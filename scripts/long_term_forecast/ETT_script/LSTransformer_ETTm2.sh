@@ -9,10 +9,10 @@ data=ETTm2
 features=M
 d_lstm=256
 lstm_layers=1
-e_layers=1
-d_model=128
+e_layers=2
+d_model=512
 n_heads=8
-d_layers=1
+d_layers=2
 d_fc=256 
 factor=3
 enc_in=7
@@ -21,7 +21,12 @@ c_out=7
 des='Exp'
 batch_size=64
 itr=1
-dropout=0.5
+dropout=0.25
+learning_rate=0.001
+optimizer=adamw
+wd=0.05
+train_epochs=400
+patience=8
 
 python -u run.py \
   --task_name $task_name \
@@ -49,8 +54,12 @@ python -u run.py \
   --d_lstm $d_lstm \
   --lstm_layers $lstm_layers \
   --d_fc $d_fc \
-  --dropout $dropout 
-
+  --dropout $dropout \
+  --learning_rate $learning_rate \
+  --optimizer $optimizer \
+  --wd $wd \
+  --train_epochs $train_epochs \
+  --patience $patience 
 
 python -u run.py \
   --task_name $task_name \
@@ -78,7 +87,13 @@ python -u run.py \
   --d_lstm $d_lstm \
   --lstm_layers $lstm_layers \
   --d_fc $d_fc \
-  --dropout $dropout 
+  --dropout $dropout \
+  --learning_rate $learning_rate \
+  --optimizer $optimizer \
+  --wd $wd \
+  --train_epochs $train_epochs \
+  --patience $patience 
+
 
 
 python -u run.py \
@@ -107,7 +122,13 @@ python -u run.py \
   --d_lstm $d_lstm \
   --lstm_layers $lstm_layers \
   --d_fc $d_fc \
-  --dropout $dropout 
+  --dropout $dropout \
+  --learning_rate $learning_rate \
+  --optimizer $optimizer \
+  --wd $wd \
+  --train_epochs $train_epochs \
+  --patience $patience 
+
  
 
 python -u run.py \
@@ -136,5 +157,11 @@ python -u run.py \
   --d_lstm $d_lstm \
   --lstm_layers $lstm_layers \
   --d_fc $d_fc \
-  --dropout $dropout 
+  --dropout $dropout \
+  --learning_rate $learning_rate \
+  --optimizer $optimizer \
+  --wd $wd \
+  --train_epochs $train_epochs \
+  --patience $patience 
+
  

@@ -44,6 +44,8 @@ class Model(nn.Module):
                                        batch_first=True),
                                        num_layers=configs.e_layers)
         
+        
+        
         ## Step 3: Feed-forward network to predict future trajectories
         self.linear_layers = nn.ModuleList()  
         ff_previous_size = configs.d_model
@@ -54,8 +56,7 @@ class Model(nn.Module):
                 self.layer_norm_module_list.append(nn.LayerNorm(configs.d_fc))        
         
         ## Step 4: final output layer
-        self.flatten = nn.Flatten()
-        self.output_layer = nn.Linear(self.seq_len * configs.d_fc, self.pred_len * self.c_out)
+        self.output_layer = nn.Linear(configs.d_fc, self.pred_len)
 
 
     def forecast(self, x_enc, x_mark_enc, x_dec, x_mark_dec):
@@ -86,9 +87,7 @@ class Model(nn.Module):
                 x_enc = self.layer_norm_module_list[i+len(self.lstm)](x_enc)
             x_enc = self.dropout(x_enc)  
             x_enc = F.relu(x_enc)    
-        x_enc = self.flatten(x_enc)
-        x_enc = self.output_layer(x_enc)  # Shape: (batch_size, output_len * n_output_feature)
-        x_enc = x_enc.view(batch_size, self.pred_len, self.c_out)     
+        x_enc = self.output_layer(x_enc).permute(0,2,1)[:,:,:self.c_out]  # Shape: (batch_size, output_len * n_output_feature)    
         return x_enc
    
     def forward(self, x_enc, x_mark_enc, x_dec, x_mark_dec, mask=None):
