@@ -750,14 +750,19 @@ class UEAloader(Dataset):
 
 class USC_dataset(Dataset): # WIP
     
-    def __init__(self, args, flag:str='train'):
+    def __init__(self, args, root_path, flag='train', size=None,
+            features='S', data_path='ETTm1.csv',
+            target='OT', scale=False, timeenc=0, freq='t', seasonal_patterns=None):
         self.args = args
+        self.features = args.features
         self.root_path = args.root_path
-        self.X_filename = f'PVTO_seq{args.seq_len}tar{args.seq_len}_X.npy'
-        self.y_filename = f'PVTO_seq{args.seq_len}tar{args.seq_len}_X.npy'
+        self.X_filename = f'PVTO_seq{args.seq_len}_tar{args.seq_len}_X.npy'
+        self.y_filename = f'PVTO_seq{args.seq_len}_tar{args.seq_len}_X.npy'
         self.input_features = args.input_features
         self.use_action_progress = args.use_action_progress
         self.use_offense = args.use_offense 
+        self.scale = scale
+        
         
         # init
         assert flag in ['train', 'test', 'val']
@@ -769,8 +774,8 @@ class USC_dataset(Dataset): # WIP
     def __read_data__(self):
         self.scaler = StandardScaler()
         
-        self.data_x = np.load(os.path.joinn(self.root_path, self.X_filename))
-        self.data_y = np.load(os.path.joinn(self.root_path, self.y_filename))
+        self.data_x = np.load(os.path.join(self.root_path, self.X_filename))
+        self.data_y = np.load(os.path.join(self.root_path, self.y_filename))
 
         # TDO : makes this parametrizable
         train_share, val_share, test_share = 0.6, 0.2, 0.2 
@@ -783,7 +788,7 @@ class USC_dataset(Dataset): # WIP
         y_coords = base_mask + [i %4 == 0 for i in range(3, self.data_x.shape[2])]
         vx_coords = base_mask + [i %4 == 1 for i in range(3, self.data_x.shape[2])]
         vy_coords = base_mask + [i %4 == 2 for i in range(3, self.data_x.shape[2])]
-        if self.input_featues == 'V':
+        if self.input_features == 'V':
             mask = [x or y for x,y in zip(vx_coords,vy_coords)]
         else :
             mask = [x or y for x,y in zip(x_coords,y_coords)]
@@ -802,11 +807,11 @@ class USC_dataset(Dataset): # WIP
         if self.scale:
             train_data = self.data_x[split_indices[0] : split_indices[1]]
             if self.features == 'M' :
-                train_data = np.concat([train_data, self.data_x[split_indices[0] : split_indices[1]]], axis = 1)
-            self.scaler.fit(train_data.values)
-            self.data_x = self.scaler.transform(self.data_x.values)
+                train_data = np.concatenate((train_data, self.data_x[split_indices[0] : split_indices[1]]), axis = 1)
+            self.scaler.fit(train_data)
+            self.data_x = self.scaler.transform(self.data_x)
             if self.features == 'M' :
-                self.data_y = self.scaler.transform(self.data_y.values)
+                self.data_y = self.scaler.transform(self.data_y)
 
 
         self.data_x = self.data_x[split_indices[self.set_type] : split_indices[self.set_type +1]]
