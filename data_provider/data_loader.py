@@ -750,9 +750,16 @@ class UEAloader(Dataset):
 
 class USC_dataset(Dataset): # WIP
     
-    def __init__(self, args, root_path, flag='train', size=None,
-            features='S', data_path='ETTm1.csv',
-            target='OT', scale=False, timeenc=0, freq='t', seasonal_patterns=None):
+    def __init__(self, args, root_path, 
+                flag='train', 
+                size=None,
+                features='S', 
+                data_path='ETTm1.csv',
+                target='OT', 
+                scale=False, # Shortcut taken 
+                timeenc=0, 
+                freq='t', 
+                seasonal_patterns=None):
         self.args = args
         self.features = args.features
         self.root_path = args.root_path
@@ -822,7 +829,7 @@ class USC_dataset(Dataset): # WIP
         seq_x = self.data_x[index]
         seq_y = self.data_y[index]
 
-        return seq_x, seq_y, None, None
+        return seq_x, seq_y, np.zeros(seq_x.shape), np.zeros(seq_y.shape)
 
     def __len__(self):
         return len(self.data_x)

@@ -182,7 +182,7 @@ class ModelWrapper():
         # Run a forward pass with dummy inputs
         dummy_input = torch.zeros(self.input_shape).to(self.device)
         with torch.no_grad():
-            self.model(dummy_input, None, None, None)
+            dummy_output = self.model(dummy_input, None, None, None)
         for layer in tracker.layers :
             if not isinstance(layer, type(self.model)):
                 layer_type = str(type(layer)).split('.')[-1].strip('>')[:-1]
@@ -228,7 +228,8 @@ class ModelWrapper():
         if nb_params != trainable_param_count + non_trainable_param_count:
             print(f"WARNING : Numbers of parameters do not match between detail and total, you may want to check") 
         self.trainable_params = trainable_param_count
-        self.non_trainable_params = non_trainable_param_count        
+        self.non_trainable_params = non_trainable_param_count   
+        print(f"\nDummy input shape : {dummy_input.shape} | dummy output shape : {dummy_output.shape}")     
 
     def fit(self, train_loader, val_loader, args, verbose:bool = True):
         
