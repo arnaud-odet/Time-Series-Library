@@ -779,7 +779,8 @@ class USC_dataset(Dataset): # WIP
         self.__read_data__()
 
     def __read_data__(self):
-        self.scaler = StandardScaler()
+        #self.scaler = StandardScaler()
+        self.scaler= {'mean' : [], 'scale':[]} 
         
         self.data_x = np.load(os.path.join(self.root_path, self.X_filename))
         self.data_y = np.load(os.path.join(self.root_path, self.y_filename))
@@ -790,15 +791,15 @@ class USC_dataset(Dataset): # WIP
 
         split_indices = [0 , int(np.floor(n * train_share)), int(np.floor(n * (train_share + val_share))), n] 
         
-        base_mask = [False, self.use_action_progress, self.use_offense]
-        x_coords = base_mask + [i %4 == 3 for i in range(3, self.data_x.shape[2])]
-        y_coords = base_mask + [i %4 == 0 for i in range(3, self.data_x.shape[2])]
-        vx_coords = base_mask + [i %4 == 1 for i in range(3, self.data_x.shape[2])]
-        vy_coords = base_mask + [i %4 == 2 for i in range(3, self.data_x.shape[2])]
+        base_mask = [False, self.use_action_progress, self.use_offense] + [False] * 60
+        x_coords = [False]*3 + [i %4 == 3 for i in range(3, self.data_x.shape[2])]
+        y_coords = [False]*3 + [i %4 == 0 for i in range(3, self.data_x.shape[2])]
+        vx_coords = [False]*3 + [i %4 == 1 for i in range(3, self.data_x.shape[2])]
+        vy_coords = [False]*3 + [i %4 == 2 for i in range(3, self.data_x.shape[2])]
         if self.input_features == 'V':
-            mask = [x or y for x,y in zip(vx_coords,vy_coords)]
+            mask = [x or y or b for x,y,b in zip(vx_coords,vy_coords,base_mask)]
         else :
-            mask = [x or y for x,y in zip(x_coords,y_coords)]
+            mask = [x or y or b for x,y,b in zip(x_coords,y_coords,base_mask)]
 
                               
         if self.features == 'M': # multivariate precicts multivariate
@@ -812,13 +813,59 @@ class USC_dataset(Dataset): # WIP
             self.data_y = np.expand_dims(self.data_y[:,:,1], np.newaxis)
 
         if self.scale:
+            train_data = np.concatenate((self.data_x[split_indices[0] : split_indices[1]],
+                                         self.data_y[split_indices[0] : split_indices[1]]), axis = 1)
+            train_data = train_data.reshape((-1,train_data.shape[2]))
+            start_col = 0
+            if self.use_action_progress or self.features == 'S' or self.features == 'MS' :
+                self.scaler['mean'].append(train_data[:,0].mean())
+                self.scaler['scale'].append(train_data[:,0].std())
+                start_col +=1
+            if self.use_offense :
+                self.scaler['mean'].append(0)
+                self.scaler['scale'].append(1)
+                start_col +=1
+            if self.features == 'M' or self.features == 'MS' :            
+                if self.input_features == 'V': # Standardization of all velocities (on x-axis and y-axis independantly)
+                    for i in range(start_col, start_col + 30):
+                        self.scaler['mean'].append(train_data[:,i].mean())
+                        self.scaler['scale'].append(train_data[:,i].std())
+                else : # Custom standardization takin into account the pitch 
+                    for i in range(15):
+                        self.scaler['mean'].append(50) # Center on the x-axis
+                        self.scaler['scale'].append(50)
+                        self.scaler['mean'].append(35) # Center on the y-axis
+                        self.scaler['scale'].append(50) # Same scale as for x not to artificially increase the y displacement
+                    
+            offset_x = 1 if not self.use_action_progress and (self.feature == 'M' or self.feature == 'MS') else 0
+            offset_y = 1 if not self.use_action_progress and self.feature == 'M' else 0
+            for i in range(self.data_x.shape[2]):
+                self.data_x[:,:,i] = (self.data_x[:,:,i] - self.scaler['mean'][i+offset_x]) / self.scaler['scale'][i+offset_x]
+            for i in range(self.data_y.shape[2]):
+                self.data_y[:,:,i] = (self.data_y[:,:,i] - self.scaler['mean'][i+offset_y]) / self.scaler['scale'][i+offset_y]
+            
+            self.scaler['offset_x'] = offset_x
+            self.scaler['offset_y'] = offset_y
+            self.scaler['x_size'] = self.args.batch_size * self.data_x.shape[1] * self.data_x.shape[2]
+            self.scaler['y_size'] = self.args.batch_size * self.data_y.shape[1] * self.data_y.shape[2]
+        
+            """
+            # TO DO : customize scaler regarding to the nature of the column (position / velocity / progress)
+            n = self.data_x.shape[0]
+            l = self.data_x.shape[1]
+            t = self.data_y.shape[1]
+            d = self.data_x.shape[2]
             train_data = self.data_x[split_indices[0] : split_indices[1]]
+            nt = train_data.shape[0]            
+            r = l
             if self.features == 'M' :
-                train_data = np.concatenate((train_data, self.data_x[split_indices[0] : split_indices[1]]), axis = 1)
-            self.scaler.fit(train_data)
-            self.data_x = self.scaler.transform(self.data_x)
+                train_data = np.concatenate((train_data, self.data_y[split_indices[0] : split_indices[1]]), axis = 1)
+                r = l + t
+            self.scaler.fit(train_data.reshape((nt * r, d)))
+            self.data_x = self.scaler.transform(self.data_x.reshape((n * l, d))).reshape((n,l,d))            
             if self.features == 'M' :
-                self.data_y = self.scaler.transform(self.data_y)
+                self.data_y = self.scaler.transform(self.data_y.reshape((n * t, d))).reshape((n,t,d))
+            """
 
 
         self.data_x = self.data_x[split_indices[self.set_type] : split_indices[self.set_type +1]]
@@ -835,4 +882,12 @@ class USC_dataset(Dataset): # WIP
         return len(self.data_x)
 
     def inverse_transform(self, data):
-        return self.scaler.inverse_transform(data)    
+        if data.size == self.scaler['x_size'] :
+            offset = self.scaler['offset_x']
+        elif data.size == self.scaler['y_size'] :
+            offset = self.scaler['offset_y']
+        else : 
+            raise(ValueError('Please investigate scaling operation, sizes do not match with neither x nor y'))
+        for i in range(data.shape[2]):
+            data[:,:,i] = data[:,:,i] * self.scaler['scale'][i+offset] + self.scaler['mean'][i+offset]
+        return data   

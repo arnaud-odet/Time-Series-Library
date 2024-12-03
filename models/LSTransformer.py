@@ -63,6 +63,7 @@ class Model(nn.Module):
         
         # x shape: (batch_size, input_len, n_features)
         batch_size = x_enc.shape[0]
+        #print(f"Shape step 1 : {x_enc.shape} - input")
         # Step 1: LSTM
         for i,lstm in enumerate(self.lstm) :
             residuals = x_enc
@@ -72,10 +73,13 @@ class Model(nn.Module):
             if self.layer_norm:
                 x_enc = self.layer_norm_module_list[i](x_enc)
             x_enc = self.dropout(x_enc)                 
+        #print(f"Shape step 2 : {x_enc.shape} - post LSTM")
         x_enc = self.projection(x_enc)         
+        #print(f"Shape step 3 : {x_enc.shape} - post projection")
 
         # Step 2: Transformer
         x_enc = self.transformer(x_enc)  # Shape: (batch_size, transformer_embed_dim)
+        #print(f"Shape step 4 : {x_enc.shape} - post Transformer")
 
         # Step 3: Fully connected layers       
         for i,linear in enumerate(self.linear_layers):
@@ -87,7 +91,12 @@ class Model(nn.Module):
                 x_enc = self.layer_norm_module_list[i+len(self.lstm)](x_enc)
             x_enc = self.dropout(x_enc)  
             x_enc = F.relu(x_enc)    
-        x_enc = self.output_layer(x_enc).permute(0,2,1)[:,:,:self.c_out]  # Shape: (batch_size, output_len * n_output_feature)    
+        #print(f"Shape step 5 : {x_enc.shape} - post Linear")
+        x_enc = self.output_layer(x_enc)
+        #print(f"Shape step 6 : {x_enc.shape} - post output layer")
+        x_enc = x_enc.permute(0,2,1)[:,:,:self.c_out]  # Shape: (batch_size, output_len * n_output_feature)   
+        #print(f"Shape step 7 : {x_enc.shape} - post permute & truncate")
+         
         return x_enc
    
     def forward(self, x_enc, x_mark_enc, x_dec, x_mark_dec, mask=None):
