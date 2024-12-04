@@ -3,7 +3,7 @@ task_name=long_term_forecast
 is_training=1
 root_path=./dataset/USC/
 data_path=na
-input_features=P
+input_features=V
 use_action_progress=True
 use_offense=True
 data=USC
@@ -29,21 +29,22 @@ wd=0.05
 train_epochs=10
 patience=3
 
-python -u run.py \
+
+  python -u run.py \
   --task_name $task_name \
   --is_training $is_training \
   --root_path $root_path \
   --data_path $data_path \
-  --model_id USC_48_48 \
-  --model PatchTST \
+  --model_id USC_64_64 \
+  --model $model_name \
   --data $data \
   --input_features $input_features \
   --use_action_progress $use_action_progress \
   --use_offense $use_offense \
   --features $features \
-  --seq_len 48 \
+  --seq_len 64 \
   --label_len 12 \
-  --pred_len 48 \
+  --pred_len 64 \
   --e_layers $e_layers \
   --d_model $d_model \
   --d_layers $d_layers \
@@ -65,21 +66,21 @@ python -u run.py \
   --train_epochs $train_epochs \
   --patience $patience 
 
-  python -u run.py \
+python -u run.py \
   --task_name $task_name \
   --is_training $is_training \
   --root_path $root_path \
   --data_path $data_path \
-  --model_id USC_48_48 \
-  --model $model_name \
+  --model_id USC_64_64 \
+  --model PatchTST \
   --data $data \
   --input_features $input_features \
   --use_action_progress $use_action_progress \
   --use_offense $use_offense \
   --features $features \
-  --seq_len 48 \
+  --seq_len 64 \
   --label_len 12 \
-  --pred_len 48 \
+  --pred_len 64 \
   --e_layers $e_layers \
   --d_model $d_model \
   --d_layers $d_layers \
