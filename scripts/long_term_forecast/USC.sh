@@ -3,7 +3,7 @@ task_name=long_term_forecast
 is_training=1
 root_path=./dataset/USC/
 data_path=na
-input_features=V
+input_features=P
 use_action_progress=True
 use_offense=True
 data=USC
@@ -23,8 +23,8 @@ des='Exp'
 batch_size=64
 itr=1
 dropout=0.25
-learning_rate=0.0001
-optimizer=adamw
+learning_rate=0.0000001
+optimizer=adam
 wd=0.05
 train_epochs=10
 patience=3
@@ -34,16 +34,52 @@ python -u run.py \
   --is_training $is_training \
   --root_path $root_path \
   --data_path $data_path \
-  --model_id USC_32_32 \
+  --model_id USC_48_48 \
+  --model PatchTST \
+  --data $data \
+  --input_features $input_features \
+  --use_action_progress $use_action_progress \
+  --use_offense $use_offense \
+  --features $features \
+  --seq_len 48 \
+  --label_len 12 \
+  --pred_len 48 \
+  --e_layers $e_layers \
+  --d_model $d_model \
+  --d_layers $d_layers \
+  --factor $factor \
+  --enc_in $enc_in \
+  --dec_in $dec_in \
+  --c_out $c_out \
+  --des $des \
+  --n_heads $n_heads \
+  --batch_size $batch_size \
+  --itr $itr \
+  --d_lstm $d_lstm \
+  --lstm_layers $lstm_layers \
+  --d_fc $d_fc \
+  --dropout $dropout \
+  --learning_rate $learning_rate \
+  --optimizer $optimizer \
+  --wd $wd \
+  --train_epochs $train_epochs \
+  --patience $patience 
+
+  python -u run.py \
+  --task_name $task_name \
+  --is_training $is_training \
+  --root_path $root_path \
+  --data_path $data_path \
+  --model_id USC_48_48 \
   --model $model_name \
   --data $data \
   --input_features $input_features \
   --use_action_progress $use_action_progress \
   --use_offense $use_offense \
   --features $features \
-  --seq_len 32 \
+  --seq_len 48 \
   --label_len 12 \
-  --pred_len 32 \
+  --pred_len 48 \
   --e_layers $e_layers \
   --d_model $d_model \
   --d_layers $d_layers \

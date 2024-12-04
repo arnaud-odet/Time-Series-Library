@@ -756,7 +756,7 @@ class USC_dataset(Dataset): # WIP
                 features='S', 
                 data_path='ETTm1.csv',
                 target='OT', 
-                scale=False, # Shortcut taken 
+                scale=True,
                 timeenc=0, 
                 freq='t', 
                 seasonal_patterns=None):

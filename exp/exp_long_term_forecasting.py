@@ -68,8 +68,8 @@ class Exp_Long_Term_Forecast(Exp_Basic):
 
                 pred = outputs.detach().cpu()
                 true = batch_y.detach().cpu()
-
                 loss = criterion(pred, true)
+                #print(f"{pred.shape=}, {true.shape=}, {loss=}")
 
                 total_loss.append(loss)
         total_loss = np.average(total_loss)
