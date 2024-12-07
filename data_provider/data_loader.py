@@ -748,7 +748,7 @@ class UEAloader(Dataset):
         return len(self.all_IDs)
 
 
-class USC_dataset(Dataset): # WIP
+class USC_dataset(Dataset): 
     
     def __init__(self, args, root_path, 
                 flag='train', 
