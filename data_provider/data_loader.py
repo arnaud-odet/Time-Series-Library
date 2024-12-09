@@ -849,23 +849,6 @@ class USC_dataset(Dataset):
             self.scaler['x_size'] = self.args.batch_size * self.data_x.shape[1] * self.data_x.shape[2]
             self.scaler['y_size'] = self.args.batch_size * self.data_y.shape[1] * self.data_y.shape[2]
         
-            """
-            # TO DO : customize scaler regarding to the nature of the column (position / velocity / progress)
-            n = self.data_x.shape[0]
-            l = self.data_x.shape[1]
-            t = self.data_y.shape[1]
-            d = self.data_x.shape[2]
-            train_data = self.data_x[split_indices[0] : split_indices[1]]
-            nt = train_data.shape[0]            
-            r = l
-            if self.features == 'M' :
-                train_data = np.concatenate((train_data, self.data_y[split_indices[0] : split_indices[1]]), axis = 1)
-                r = l + t
-            self.scaler.fit(train_data.reshape((nt * r, d)))
-            self.data_x = self.scaler.transform(self.data_x.reshape((n * l, d))).reshape((n,l,d))            
-            if self.features == 'M' :
-                self.data_y = self.scaler.transform(self.data_y.reshape((n * t, d))).reshape((n,t,d))
-            """
 
 
         self.data_x = self.data_x[split_indices[self.set_type] : split_indices[self.set_type +1]]
@@ -875,8 +858,12 @@ class USC_dataset(Dataset):
     def __getitem__(self, index):
         seq_x = self.data_x[index]
         seq_y = self.data_y[index]
+        # x_mark and y_mark must be of shape [l, 4] and [p, 4]
+        seq_mark = np.arange(self.args.seq_len + self.args.pred_len) / (self.args.seq_len + self.args.pred_len -1) -0.5
+        seq_x_mark = np.concatenate((np.zeros((self.args.seq_len,3)),seq_mark[:self.args.seq_len].reshape(-1,1)), axis = 1)
+        seq_y_mark = np.concatenate((np.zeros((self.args.pred_len,3)),seq_mark[self.args.seq_len:].reshape(-1,1)), axis = 1)
 
-        return seq_x, seq_y, np.zeros(seq_x.shape), np.zeros(seq_y.shape)
+        return seq_x, seq_y, seq_x_mark, seq_y_mark 
 
     def __len__(self):
         return len(self.data_x)
