@@ -25,8 +25,19 @@ def usc_data_translator(batch_x):
     batch_size = batch_x.shape[0]
     offset = batch_x.shape[-1] - 30
     x = []
+    meta_info = []
     for i in range(batch_size) :
         agent_data = [batch_x[i, :, offset +p :offset +p +2] for p in range(15)] 
+        # change tensor
+        dx, dy = tensor[-1, 2:4] - tensor[-1, :2]
+        degree = math.atan2(dy, dx)
+        x = tensor[-1, 2]
+        y = tensor[-1, 3]
+        pre_x = tensor[-1, 0]
+        pre_y = tensor[-1, 1]
+        info = torch.tensor(
+            [degree, x, y, pre_x, pre_y]).unsqueeze(dim=0)
+        meta_info.append(info)
         
         x.append({'agent_data': agent_data, 
             'lane_data': None, 
