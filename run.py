@@ -42,7 +42,7 @@ if __name__ == '__main__':
     parser.add_argument('--label_len', type=int, default=48, help='start token length')
     parser.add_argument('--pred_len', type=int, default=96, help='prediction sequence length')
     parser.add_argument('--seasonal_patterns', type=str, default='Monthly', help='subset for M4')
-    parser.add_argument('--inverse', action='store_true', help='inverse output data', default=False)
+    parser.add_argument('--inverse', action='store_true', help='inverse output data', default=False)    
 
     # inputation task
     parser.add_argument('--mask_rate', type=float, default=0.25, help='mask ratio')
@@ -95,6 +95,7 @@ if __name__ == '__main__':
                         help='Input feature types for USC data, can be either V (Velocity) or P (Position)')  
     parser.add_argument('--use_action_progress', type=bool, default=False, help='Use or not the action progress in inputs')  
     parser.add_argument('--use_offense', type=bool, default=False, help='Use or not the offense boolean in inputs')  
+
  
 
     

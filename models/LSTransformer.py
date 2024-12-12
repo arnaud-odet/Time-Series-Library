@@ -94,7 +94,7 @@ class Model(nn.Module):
         #print(f"Shape step 5 : {x_enc.shape} - post Linear")
         x_enc = self.output_layer(x_enc)
         #print(f"Shape step 6 : {x_enc.shape} - post output layer")
-        x_enc = x_enc.permute(0,2,1)[:,:,:self.c_out]  # Shape: (batch_size, output_len * n_output_feature)   
+        x_enc = x_enc.permute(0,2,1)[:,-self.pred_len:,:self.c_out]  # Shape: (batch_size, output_len * n_output_feature)   
         #print(f"Shape step 7 : {x_enc.shape} - post permute & truncate")
          
         return x_enc

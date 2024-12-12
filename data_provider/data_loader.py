@@ -857,11 +857,12 @@ class USC_dataset(Dataset):
 
     def __getitem__(self, index):
         seq_x = self.data_x[index]
-        seq_y = self.data_y[index]
-        # x_mark and y_mark must be of shape [l, 4] and [p, 4]
+        seq_y =  np.concatenate((seq_x[-self.args.label_len:,:], self.data_y[index]), axis = 0)
+        # x_mark and y_mark must be of shape [l, 4] and [p+t, 4]
         seq_mark = np.arange(self.args.seq_len + self.args.pred_len) / (self.args.seq_len + self.args.pred_len -1) -0.5
         seq_x_mark = np.concatenate((np.zeros((self.args.seq_len,3)),seq_mark[:self.args.seq_len].reshape(-1,1)), axis = 1)
-        seq_y_mark = np.concatenate((np.zeros((self.args.pred_len,3)),seq_mark[self.args.seq_len:].reshape(-1,1)), axis = 1)
+        seq_y_mark = np.concatenate((np.zeros((self.args.pred_len+self.args.label_len,3)),
+                                     seq_mark[self.args.seq_len- self.args.label_len:].reshape(-1,1)), axis = 1)
 
         return seq_x, seq_y, seq_x_mark, seq_y_mark 
 
@@ -869,12 +870,17 @@ class USC_dataset(Dataset):
         return len(self.data_x)
 
     def inverse_transform(self, data):
-        if data.size == self.scaler['x_size'] :
-            offset = self.scaler['offset_x']
-        elif data.size == self.scaler['y_size'] :
-            offset = self.scaler['offset_y']
-        else : 
-            raise(ValueError('Please investigate scaling operation, sizes do not match with neither x nor y'))
-        for i in range(data.shape[2]):
-            data[:,:,i] = data[:,:,i] * self.scaler['scale'][i+offset] + self.scaler['mean'][i+offset]
+        
+        data_size = data.shape[0] * data.shape[1] 
+        if not hasattr(self,'inverse_offset') :
+            if data_size == self.scaler['y_size'] :
+                offset = self.scaler['offset_y']
+            elif data_size == self.scaler['x_size'] :
+                offset = self.scaler['offset_x']
+            else : 
+                raise(ValueError('Please investigate scaling operation, sizes do not match with neither x nor y'))
+            self.inverse_offset = offset
+            
+        for i in range(data.shape[1]):
+            data[:,i] = data[:,i] * self.scaler['scale'][i+self.inverse_offset] + self.scaler['mean'][i+self.inverse_offset]
         return data   
