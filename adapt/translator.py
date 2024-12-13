@@ -1,6 +1,7 @@
 import pandas as pd
 import numpy as np
 import torch
+import math
 
 def args_translator(args):
     
@@ -27,17 +28,11 @@ def usc_data_translator(batch_x):
     x = []
     meta_info = []
     for i in range(batch_size) :
-        agent_data = [batch_x[i, :, offset +p :offset +p +2] for p in range(15)] 
-        # change tensor
-        dx, dy = tensor[-1, 2:4] - tensor[-1, :2]
-        degree = math.atan2(dy, dx)
-        x = tensor[-1, 2]
-        y = tensor[-1, 3]
-        pre_x = tensor[-1, 0]
-        pre_y = tensor[-1, 1]
-        info = torch.tensor(
-            [degree, x, y, pre_x, pre_y]).unsqueeze(dim=0)
-        meta_info.append(info)
+        agent_data = [batch_x[i, :, p + offset : p + offset +2] for p in range(15)] 
+        d = [ ad[-1,:] - ad[-2,:] for ad in agent_data]
+        degree = [math.atan2(dp[1], dp[0]) for dp in d]
+        prev_positions = torch.cat([torch.Tensor([ad[-1,0], ad[-1,1],ad[-2,0], ad[-2,1]]).reshape(1,4) for ad in agent_data])
+        meta_info = torch.cat((torch.Tensor(degree).reshape(15,1), prev_positions),1)
         
         x.append({'agent_data': agent_data, 
             'lane_data': None, 
@@ -50,6 +45,6 @@ def usc_data_translator(batch_x):
             'cent_x': None, 
             'cent_y': None, 
             'angle': None, 
-            'meta_info': None})
+            'meta_info': meta_info})
     
     return x
