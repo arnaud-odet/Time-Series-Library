@@ -40,7 +40,7 @@ def usc_data_translator(batch_x, args):
         meta_info = torch.cat((torch.Tensor(degree).reshape(15,1), prev_positions),1)
         
         # Lane data
-        lane_data = [torch.zeros(19,128)]
+        lane_data = [torch.zeros(19,64)]
         
         # Labels
         labels = torch.ones(15,2)
