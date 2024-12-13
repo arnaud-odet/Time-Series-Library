@@ -22,17 +22,31 @@ def args_translator(args):
     
     return args
 
-def usc_data_translator(batch_x):
+def usc_data_translator(batch_x, args):
     batch_size = batch_x.shape[0]
     offset = batch_x.shape[-1] - 30
     x = []
     meta_info = []
+    lane_data = []
     for i in range(batch_size) :
+        
+        # Agent data
         agent_data = [batch_x[i, :, p + offset : p + offset +2] for p in range(15)] 
+        
+        # Meta info
         d = [ ad[-1,:] - ad[-2,:] for ad in agent_data]
         degree = [math.atan2(dp[1], dp[0]) for dp in d]
         prev_positions = torch.cat([torch.Tensor([ad[-1,0], ad[-1,1],ad[-2,0], ad[-2,1]]).reshape(1,4) for ad in agent_data])
         meta_info = torch.cat((torch.Tensor(degree).reshape(15,1), prev_positions),1)
+        
+        # Lane data
+        
+        # Labels
+        
+        # Consider
+        
+        # Label is valid
+        
         
         x.append({'agent_data': agent_data, 
             'lane_data': None, 

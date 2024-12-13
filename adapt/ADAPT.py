@@ -45,9 +45,12 @@ class Model(nn.Module):
         # L: Lane number
         # D: Feature size
 
+        mapping = usc_data_translator(mapping)
+
         batch_size = len(mapping)
         if validate:
             batch_init(mapping)
+            
 
         outputs = torch.zeros(batch_size, 6, 30, 2, device=self.device)
         multi_outputs = []
