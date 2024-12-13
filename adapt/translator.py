@@ -40,22 +40,26 @@ def usc_data_translator(batch_x, args):
         meta_info = torch.cat((torch.Tensor(degree).reshape(15,1), prev_positions),1)
         
         # Lane data
+        lane_data = [torch.zeros(19,128)]
         
         # Labels
+        labels = torch.ones(15,2)
         
         # Consider
+        consider = torch.ones(1)
         
         # Label is valid
+        label_is_valid = torch.ones(15)
         
         
         x.append({'agent_data': agent_data, 
-            'lane_data': None, 
+            'lane_data': lane_data, 
             'city_name': None, 
             'file_name': None, 
             'origin_labels': None, 
-            'labels': None, 
-            'label_is_valid': None, 
-            'consider': None, 
+            'labels': labels, 
+            'label_is_valid': label_is_valid, 
+            'consider': consider, 
             'cent_x': None, 
             'cent_y': None, 
             'angle': None, 

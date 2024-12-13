@@ -19,6 +19,7 @@ class Model(nn.Module):
         super(Model, self).__init__()
         
         args = args_translator(args)
+        self.args = args
 
         self.hidden_size = args.hidden_size
         self.device = args.device
@@ -45,7 +46,7 @@ class Model(nn.Module):
         # L: Lane number
         # D: Feature size
 
-        mapping = usc_data_translator(mapping)
+        mapping = usc_data_translator(mapping, self.args)
 
         batch_size = len(mapping)
         if validate:
