@@ -93,8 +93,8 @@ if __name__ == '__main__':
     parser.add_argument('--wd', type=float, default=0, help='Weight decay')  
     parser.add_argument('--input_features', type=str, default='V', 
                         help='Input feature types for USC data, can be either V (Velocity) or P (Position)')  
-    parser.add_argument('--use_action_progress', type=bool, default=False, help='Use or not the action progress in inputs')  
-    parser.add_argument('--use_offense', type=bool, default=False, help='Use or not the offense boolean in inputs')  
+    parser.add_argument('--use_action_progress', action ="store_true", default=False, help='Use or not the action progress in inputs')  
+    parser.add_argument('--use_offense', action ="store_true", default=False, help='Use or not the offense boolean in inputs')  
 
  
 

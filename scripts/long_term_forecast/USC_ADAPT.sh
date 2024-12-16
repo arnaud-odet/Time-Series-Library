@@ -7,14 +7,12 @@ seq_len=32
 pred_len=32
 label_len=16
 input_features=P
-use_action_progress=False
-use_offense=False
 data=USC
 features=M
 d_lstm=128
 lstm_layers=1
 e_layers=2
-d_model=64
+d_model=128
 n_heads=8
 d_layers=1
 d_fc=128 
@@ -23,7 +21,7 @@ enc_in=32
 dec_in=32
 c_out=32
 des='Exp'
-batch_size=32
+batch_size=64
 itr=1
 dropout=0.1
 learning_rate=0.001
@@ -46,8 +44,6 @@ python -u run.py \
   --features $features \
   --data $data \
   --input_features $input_features \
-  --use_action_progress $use_action_progress \
-  --use_offense $use_offense \
   --e_layers $e_layers \
   --d_model $d_model \
   --d_layers $d_layers \

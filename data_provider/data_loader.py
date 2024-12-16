@@ -800,7 +800,6 @@ class USC_dataset(Dataset):
             mask = [x or y or b for x,y,b in zip(vx_coords,vy_coords,base_mask)]
         else :
             mask = [x or y or b for x,y,b in zip(x_coords,y_coords,base_mask)]
-
                               
         if self.features == 'M': # multivariate precicts multivariate
             self.data_x = self.data_x[:,:,mask]
@@ -836,16 +835,17 @@ class USC_dataset(Dataset):
                         self.scaler['scale'].append(50)
                         self.scaler['mean'].append(35) # Center on the y-axis
                         self.scaler['scale'].append(50) # Same scale as for x not to artificially increase the y displacement
-                    
-            offset_x = 1 if not self.use_action_progress and (self.feature == 'M' or self.feature == 'MS') else 0
-            offset_y = 1 if not self.use_action_progress and self.feature == 'M' else 0
-            for i in range(self.data_x.shape[2]):
-                self.data_x[:,:,i] = (self.data_x[:,:,i] - self.scaler['mean'][i+offset_x]) / self.scaler['scale'][i+offset_x]
-            for i in range(self.data_y.shape[2]):
-                self.data_y[:,:,i] = (self.data_y[:,:,i] - self.scaler['mean'][i+offset_y]) / self.scaler['scale'][i+offset_y]
             
-            self.scaler['offset_x'] = offset_x
-            self.scaler['offset_y'] = offset_y
+            #offset_x = 1 if self.use_action_progress and (self.features == 'M' or self.feature == 'MS') else 0
+            #offset_y = 1 if self.use_action_progress  and self.features == 'M' else 0
+            #print(offset_x, offset_y)
+            for i in range(self.data_x.shape[2]):
+                self.data_x[:,:,i] = (self.data_x[:,:,i] - self.scaler['mean'][i]) / self.scaler['scale'][i]
+            for i in range(self.data_y.shape[2]):
+                self.data_y[:,:,i] = (self.data_y[:,:,i] - self.scaler['mean'][i]) / self.scaler['scale'][i]
+            
+            self.scaler['offset_x'] = 0
+            self.scaler['offset_y'] = 0
             self.scaler['x_size'] = self.args.batch_size * self.data_x.shape[1] * self.data_x.shape[2]
             self.scaler['y_size'] = self.args.batch_size * self.data_y.shape[1] * self.data_y.shape[2]
         

@@ -14,7 +14,7 @@ def merge_tensors(tensors, device, hidden_size):
     res = torch.zeros([len(tensors), max(lengths), hidden_size], device=device)
     for i, tensor in enumerate(tensors):
         if tensor is not None:
-            res[i][:tensor.shape[0]] = tensor
+            res[i][:tensor.shape[0]] = tensor  
     return res, lengths
 
 
@@ -34,6 +34,7 @@ class Trajectory_Loss(nn.Module):
 
         # === L_reg ===
         # l_reg.shape = (M_c, T_f, 2)
+        #print(f"{prediction.shape=}, {prediction[torch.arange(M, device=device), best_ids].shape=}, {label.shape=}")
         l_reg = F.smooth_l1_loss(prediction[torch.arange(M, device=device), best_ids], label, reduction="none")
         l_reg = (l_reg*valid).sum()/(valid.sum()*2)
         loss_ += l_reg
@@ -241,6 +242,7 @@ class Trajectory_Decoder(nn.Module):
         super(Trajectory_Decoder, self).__init__()
 
         self.multi_agent = args.multi_agent
+        self.args = args
 
         meta_size = 5
         hidden_size = args.hidden_size
@@ -250,7 +252,7 @@ class Trajectory_Decoder(nn.Module):
         else:
             self.endpoint_predictor = MLP(hidden_size + meta_size, 6*2, residual=True)
 
-        self.get_trajectory = MLP(hidden_size + meta_size + 2, 29*2, residual=True)
+        self.get_trajectory = MLP(hidden_size + meta_size + 2, (args.pred_len-1)*2, residual=True)
         self.endpoint_refiner = MLP(hidden_size + meta_size + 2, 2, residual=True)
         self.get_prob = MLP(hidden_size + meta_size + 2, 1, residual=True)
 
@@ -283,12 +285,12 @@ class Trajectory_Decoder(nn.Module):
         # agent_features.shape = (N, M, 6, 128 + 5 + 2)
         agent_features = torch.cat([agent_features, endpoints.detach()], dim=-1)
 
-        predictions = self.get_trajectory(agent_features).view(N, M, 6, 29, 2)
+        predictions = self.get_trajectory(agent_features).view(N, M, 6, (self.args.pred_len-1), 2)
         logits = self.get_prob(agent_features).view(N, M, 6)
 
         predictions = torch.cat([predictions, endpoints.unsqueeze(dim=-2)], dim=-2)
 
-        assert predictions.shape == (N, M, 6, 30, 2)
+        assert predictions.shape == (N, M, 6, self.args.pred_len, 2)
 
         return predictions, logits
 

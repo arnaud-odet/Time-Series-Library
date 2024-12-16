@@ -53,7 +53,8 @@ class Model(nn.Module):
             batch_init(mapping)
             
 
-        outputs = torch.zeros(batch_size, 6, 30, 2, device=self.device)
+        #outputs = torch.zeros(batch_size, 6, 30, 2, device=self.device)
+        outputs = torch.zeros(batch_size, 6, self.args.pred_len, 2, device=self.device)
         multi_outputs = []
         probs = torch.zeros(batch_size, 6, device=self.device)
         losses = torch.zeros(batch_size, device=self.device)
@@ -120,7 +121,13 @@ class Model(nn.Module):
             logit = logit[consider]
             label = label[consider]
             valid = valid[consider].unsqueeze(dim=-1)
-
+            
+            ## Debug print
+            #message = ""
+            #for item, name in zip([consider, prediction, logit, labels, label], ['consider', 'prediction', 'logit', 'labels', 'label']):
+            #    message += f"{name}, len = {len(item)}, item[0].shape = {item[0].shape}" if type(item) == list else f"{name},  shape = {item.shape}"
+            #print(message)
+            
             assert torch.sum(label == -666) == 0
 
             prob = F.softmax(logit / 0.3, dim=-1)
@@ -156,7 +163,10 @@ class Model(nn.Module):
 
             return outputs, metric_probs, multi_outputs
         """
-        return prediction
+        print(f"{prediction.shape=}")
+        output = prediction[:,0,:,:]
+        
+        return output
 
     def encode_polylines(self, agent_data, lane_data):
         batch_size = len(agent_data)
