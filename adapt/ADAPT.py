@@ -37,6 +37,7 @@ class Model(nn.Module):
         self.trajectory_loss = Trajectory_Loss(args)
 
         self.inference_time = 0.0
+        
 
     def forward(self, mapping, x_mark_enc, x_dec, x_mark_dec, validate=False):
         # N: Number of prediction agents
@@ -84,10 +85,14 @@ class Model(nn.Module):
         # lane_features.shape = (N, L, D)
         agent_features, lane_features = self.encode_polylines(
                 agent_data, lane_data)
+        
+        print(f'{agent_features.shape=}, {lane_features.shape=}')
 
         # predictions.shape = (N, M, 6, 30, 2)
         predictions, logits = self.trajectory_decoder(
             agent_features, meta_info)
+
+        print(f'{predictions.shape=}, {logits.shape=}')
 
         end = time.time()
 
@@ -109,6 +114,14 @@ class Model(nn.Module):
             else:
                 consider = considers[scene_index]
 
+            if scene_index ==0 :
+                print('--- Pre-consider ---')
+                print(f'{prediction.shape=}')
+                print(f'{logit.shape=}')
+                print(f'{label.shape=}')
+                print(f'{valid.shape=}')
+                print(f'{consider.shape=}')
+
             pred_num = len(consider)
             total_agent_num += pred_num
 
@@ -121,6 +134,13 @@ class Model(nn.Module):
             logit = logit[consider]
             label = label[consider]
             valid = valid[consider].unsqueeze(dim=-1)
+            
+            if scene_index ==0 :
+                print('--- Post-consider---')
+                print(f'{prediction.shape=}')
+                print(f'{logit.shape=}')
+                print(f'{label.shape=}')
+                print(f'{valid.shape=}')
             
             ## Debug print
             #message = ""

@@ -57,7 +57,7 @@ def usc_data_translator(batch_x, args, verbose :bool = True):
             print(f"Labels : shape {labels.shape}")
         
         # Consider
-        consider = torch.ones(args.pred_len).long()
+        consider = torch.arange(15)
         if verbose and args.first_pass_verbose:
             print(f"Consider : shape {consider.shape}")
         
