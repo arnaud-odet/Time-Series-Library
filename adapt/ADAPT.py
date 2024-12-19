@@ -183,7 +183,6 @@ class Model(nn.Module):
 
             return outputs, metric_probs, multi_outputs
         """
-        print(f"{prediction.shape=}")
         output = prediction[:,0,:,:]
         
         return output
