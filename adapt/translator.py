@@ -34,37 +34,32 @@ def usc_data_translator(batch_x, args, verbose :bool = True):
         # Agent data
         pad = torch.zeros((batch_x.shape[1], args.hidden_size - 2)).to(args.device)
         agent_data = [torch.cat((batch_x[i, :, p + offset : p + offset +2], pad),1)  for p in range(15)] 
-        if verbose and args.first_pass_verbose:
-            print("=== For each scene in batch ===")
-            print(f"Agent data : len = {len(agent_data)} of shape {agent_data[0].shape}")
 
         # Lane data
         lane_data = [torch.zeros(1,args.hidden_size)]
-        if verbose and args.first_pass_verbose:
-            print(f"Lane data : len = {len(lane_data)} of shape {lane_data[0].shape}")
         
         # Meta info
         d = [ ad[-1,:2] - ad[-2,:2] for ad in agent_data]
         degree = [math.atan2(dp[1], dp[0]) for dp in d]
         prev_positions = torch.cat([torch.Tensor([ad[-1,0], ad[-1,1],ad[-2,0], ad[-2,1]]).reshape(1,4) for ad in agent_data])
         meta_info = torch.cat((torch.Tensor(degree).reshape(15,1), prev_positions),1)
-        if verbose and args.first_pass_verbose:
-            print(f"Meta info : shape {meta_info.shape}")
                 
         # Labels
         labels = torch.ones(args.pred_len,15,2)
-        if verbose and args.first_pass_verbose:
-            print(f"Labels : shape {labels.shape}")
         
         # Consider
         consider = torch.arange(15)
-        if verbose and args.first_pass_verbose:
-            print(f"Consider : shape {consider.shape}")
         
         # Label is valid
         label_is_valid = torch.ones(args.pred_len,15)
         if verbose and args.first_pass_verbose:
+            print("=== For each scene in batch ===")
+            print(f"Agent data : len = {len(agent_data)} of shape {agent_data[0].shape}")
+            print(f"Lane data : len = {len(lane_data)} of shape {lane_data[0].shape}")
+            print(f"Meta info : shape {meta_info.shape}")
+            print(f"Labels : shape {labels.shape}")
             print(f"Label is valid : shape {label_is_valid.shape}")
+            print(f"Consider : shape {consider.shape}")
             args.first_pass_verbose = False
 
         
