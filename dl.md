@@ -4,7 +4,6 @@ We aim at modelling and predicting performance in Team Sport
 
 Provided with the position of Rugby Union player, we want to predict the evolution of a "success" variable. The selected "success" variable is the position of the ball in the field.
 
-Second approach : relevance of feature engineering (dispersion, polarization, ...) vs Deep Learning approach. 
 
 # Problem formulation
 
@@ -57,3 +56,10 @@ Other :
 * Best practices ?
 * Dataset publication ?
 * Number of citation of the review vs number of citation of any article in it $\to$ is the review bad ?
+
+
+# Additional research objectives
+
+Second question : relevance of feature engineering (dispersion, polarization, ...) vs Deep Learning approach. 
+
+Third question : velocity or position to achieve best results ? (No longer so accurate : standardization issue)
