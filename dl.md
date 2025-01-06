@@ -4,13 +4,15 @@ We aim at modelling and predicting performance in Team Sport
 
 Provided with the position of Rugby Union player, we want to predict the evolution of a "success" variable. The selected "success" variable is the position of the ball in the field.
 
+Second approach : relevance of feature engineering (dispersion, polarization, ...) vs Deep Learning approach. 
+
 # Problem formulation
 
 Let $X_{(i,t)}$ be the position vector of player $i \in \{1, ..., 15\}$ at time $t$. $X_{(i,t)}$ is 2-dimensional.  
 Let $X_t$ be $\{X_{(1,t)}, ..., X_{(15,t)}\}$.  
 Let $s$ be the sequence length and $p$ be the prediction length.  
-For readability purpose, for any $t$ we define $(X_S)_t = \{X_{(t)}, X_{(t+1)}, ... X_{(t+s)}\}$   
-Let $A_t$ be the value of the "success" variable at time $t$, and $(A_\tau)_t = A_{(t + s + p)} - A_{(t + s)}$ be the difference between the "success" variable at the end of the prediction horizon and the "success" variable at the end of the sequence.  
+For readability purpose, for any $t$ we define ${X_S}_t = \{X_{(t)}, X_{(t+1)}, ... X_{(t+s)}\}$   
+Let $A_t$ be the value of the "success" variable at time $t$, and ${A_\tau}_t = A_{(t + s + p)} - A_{(t + s)}$ be the difference between the "success" variable at the end of the prediction horizon and the "success" variable at the end of the sequence.  
 
 Our objective can be formulated as : Predicting $A_\tau$ given $X_S$
 
@@ -42,3 +44,16 @@ We distinguished two communities working of problem whose formulation is rather 
   * Metrics : Miss Rate, ADE, FDE 
 
 # Implementation
+
+Compare oneself to reference algorithms / models :
+* Re-use the score disclosed in the paper or rerun the experiment and disclose the obtained score ?
+* Comparison with a given "budget" ?
+* Ability to improve SOTA in TS or MATP ? 
+* What time is it reasonable to try and implement a model given in a paper ?
+
+Other :
+* Risk of overfitting in TS with overlap ?
+* Ablation study : is there anything I am missing ?
+* Best practices ?
+* Dataset publication ?
+* Number of citation of the review vs number of citation of any article in it $\to$ is the review bad ?
