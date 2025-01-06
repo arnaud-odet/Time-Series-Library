@@ -26,6 +26,7 @@ We distinguished two communities working of problem whose formulation is rather 
   * Differences :
     * One single and uninterrupted Time Series
     * Does not necessarily involve position data (benchmark datasets do not)
+    * Stationarity and decomposition matters
   * Reference datasets : 8 datasets, used in all papers I read
   * Activity : +++
   * Code availability : +++
@@ -37,7 +38,7 @@ We distinguished two communities working of problem whose formulation is rather 
     * Use of a scene (in our case, the limits of the field)
   * Differences :
     * Outputting various trajectories (which is not an issue)
-  * Reference datasets : 3/4, not systematically used in all papers
+  * Reference datasets : 6/7 (Argoverse 1 and 2, Kitti, Waymo, ETH, SDD), not systematically used in all papers
   * Activity : +
   * Code availability : ~
   * Metrics : Miss Rate, ADE, FDE 
@@ -50,6 +51,11 @@ Compare oneself to reference algorithms / models :
 * Ability to improve SOTA in TS or MATP ? 
 * What time is it reasonable to try and implement a model given in a paper ?
 
+From literature :
+* Adversarial training ?
+* Multiple losses (reproduction, prediction, classification, ...)
+* Graphs NN used in MATP 
+
 Other :
 * Risk of overfitting in TS with overlap ?
 * Ablation study : is there anything I am missing ?
@@ -58,7 +64,14 @@ Other :
 * Number of citation of the review vs number of citation of any article in it $\to$ is the review bad ?
 
 
-# Additional research objectives
+# Future work :
+
+* "Rate" player position according to the expected outcome of the sequence ?
+* Analyze collective behavior metrics vs expected outcome 
+* Generate counterfactuals 
+* Reinforcement learning (training an agent to "move the pieces" and see how it does)  
+
+# Additional research questions
 
 Second question : relevance of feature engineering (dispersion, polarization, ...) vs Deep Learning approach. 
 
