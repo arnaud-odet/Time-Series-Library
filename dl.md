@@ -40,7 +40,7 @@ We distinguished two communities working of problem whose formulation is rather 
     * Outputting various trajectories (which is not an issue)
   * Reference datasets : 6/7 (Argoverse 1 and 2, Kitti, Waymo, ETH, SDD), not systematically used in all papers
   * Activity : +
-  * Code availability : ~
+  * Code availability : ~ (ADAPT, MSLR have a github)
   * Metrics : Miss Rate, ADE, FDE 
 
 # Implementation
@@ -57,6 +57,7 @@ From literature :
 * Graphs NN used in MATP 
 
 Other :
+* How to ensure the code is right ?
 * Risk of overfitting in TS with overlap ?
 * Ablation study : is there anything I am missing ?
 * Best practices ?
