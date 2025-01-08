@@ -13,13 +13,19 @@ Let $s$ be the sequence length and $p$ be the prediction length.
 For readability purpose, for any $t$ we define ${X_S}_t = \{X_{(t)}, X_{(t+1)}, ... X_{(t+s)}\}$   
 Let $A_t$ be the value of the "success" variable at time $t$, and ${A_\tau}_t = A_{(t + s + p)} - A_{(t + s)}$ be the difference between the "success" variable at the end of the prediction horizon and the "success" variable at the end of the sequence.  
 
-Our objective can be formulated as : Predicting $A_\tau$ given $X_S$
+Our objective can be formulated as : **Predicting $A_\tau$ given $X_S$**
+
+Intermediate finding : when trying to predict $A_\tau$, as we do not have access to the ball position, and use a proxy to determine it, we can infer $A_\tau$ from the positions. Unexpectedly, in early experiments, applying the proxy to predicted trajectories yields better results than predicting the proxy directly. 
+
+Our task could then be formulated as **Predicting $X_P$ given $X_S$** which leads us to consider existing literature as some communities are working on problem whose formulation is rather similar as ours. 
 
 
 # Pseudo related work
 
 We distinguished two communities working of problem whose formulation is rather similar as ours :
-* **Time Series** : 
+
+
+## **Time Series** : 
   * Similarities :
     * Predicting future based on past
     * Task can be either multivariate predicts multivariate, multivariate predicts univariate, univariate predicts univariate. 
@@ -31,7 +37,7 @@ We distinguished two communities working of problem whose formulation is rather 
   * Activity : +++
   * Code availability : +++
   * Metrics : MSE, MAE for LTF, SMAPE and MASE for STF
-* **Multi-agent trajectory prediction** : 
+## **Multi-agent trajectory prediction** : 
   * Similarities :
     * Predicting future based on past
     * Position data
@@ -45,18 +51,18 @@ We distinguished two communities working of problem whose formulation is rather 
 
 # Implementation
 
-Compare oneself to reference algorithms / models :
+## Compare oneself to reference algorithms / models :
 * Re-use the score disclosed in the paper or rerun the experiment and disclose the obtained score ?
 * Comparison with a given "budget" ?
 * Ability to improve SOTA in TS or MATP ? 
 * What time is it reasonable to try and implement a model given in a paper ?
 
-From literature :
+## From literature :
 * Adversarial training ?
 * Multiple losses (reproduction, prediction, classification, ...)
 * Graphs NN used in MATP 
 
-Other :
+## Other :
 * How to ensure the code is right ?
 * Risk of overfitting in TS with overlap ?
 * Ablation study : is there anything I am missing ?
