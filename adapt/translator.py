@@ -20,6 +20,8 @@ def args_translator(args):
     args.first_pass_verbose = True
     args.device = torch.device("cuda") if torch.cuda.is_available() else torch.device("cpu")
     args.world_size = torch.cuda.device_count()
+    args.n_agents = 15
+    args.n_dim = 2
     
     return args
 

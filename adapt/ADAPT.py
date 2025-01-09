@@ -47,7 +47,7 @@ class Model(nn.Module):
         # L: Lane number
         # D: Feature size
 
-        mapping = usc_data_translator(mapping, self.args)
+        mapping = usc_data_translator(mapping, self.args, verbose=False)
 
         batch_size = len(mapping)
         if validate:
@@ -55,7 +55,7 @@ class Model(nn.Module):
             
 
         #outputs = torch.zeros(batch_size, 6, 30, 2, device=self.device)
-        outputs = torch.zeros(batch_size, 6, self.args.pred_len, 2, device=self.device)
+        outputs = torch.zeros(batch_size, self.args.n_agents, 6, self.args.pred_len, self.args.n_dim, device=self.device)
         multi_outputs = []
         probs = torch.zeros(batch_size, 6, device=self.device)
         losses = torch.zeros(batch_size, device=self.device)
@@ -86,13 +86,13 @@ class Model(nn.Module):
         agent_features, lane_features = self.encode_polylines(
                 agent_data, lane_data)
         
-        print(f'{agent_features.shape=}, {lane_features.shape=}')
+        #print(f'{agent_features.shape=}, {lane_features.shape=}')
 
         # predictions.shape = (N, M, 6, 30, 2)
         predictions, logits = self.trajectory_decoder(
             agent_features, meta_info)
 
-        print(f'{predictions.shape=}, {logits.shape=}')
+        #print(f'{predictions.shape=}, {logits.shape=}')
 
         end = time.time()
 
@@ -114,6 +114,7 @@ class Model(nn.Module):
             else:
                 consider = considers[scene_index]
 
+            """
             if scene_index ==0 :
                 print('--- Pre-consider ---')
                 print(f'{prediction.shape=}')
@@ -121,6 +122,7 @@ class Model(nn.Module):
                 print(f'{label.shape=}')
                 print(f'{valid.shape=}')
                 print(f'{consider.shape=}')
+            """
 
             pred_num = len(consider)
             total_agent_num += pred_num
@@ -135,13 +137,14 @@ class Model(nn.Module):
             label = label[consider]
             valid = valid[consider].unsqueeze(dim=-1)
             
+            """
             if scene_index ==0 :
                 print('--- Post-consider---')
                 print(f'{prediction.shape=}')
                 print(f'{logit.shape=}')
                 print(f'{label.shape=}')
                 print(f'{valid.shape=}')
-            
+            """
             ## Debug print
             #message = ""
             #for item, name in zip([consider, prediction, logit, labels, label], ['consider', 'prediction', 'logit', 'labels', 'label']):
@@ -153,7 +156,8 @@ class Model(nn.Module):
             prob = F.softmax(logit / 0.3, dim=-1)
             log_prob = F.log_softmax(logit, dim=-1)
 
-            outputs[scene_index] = prediction[0]
+            #outputs[scene_index] = prediction[0] #OLD : keeping only first agent
+            outputs[scene_index] = prediction
             probs[scene_index] = prob[0]
 
             if validate and self.multi_agent:
@@ -183,9 +187,8 @@ class Model(nn.Module):
 
             return outputs, metric_probs, multi_outputs
         """
-        output = prediction[:,0,:,:]
         
-        return output
+        return outputs[:,:,0,:,:].reshape(batch_size, self.args.pred_len, self.args.n_agents * self.args.n_dim)
 
     def encode_polylines(self, agent_data, lane_data):
         batch_size = len(agent_data)
