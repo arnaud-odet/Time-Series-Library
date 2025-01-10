@@ -884,3 +884,81 @@ class USC_dataset(Dataset):
         for i in range(data.shape[1]):
             data[:,i] = data[:,i] * self.scaler['scale'][i+self.inverse_offset] + self.scaler['mean'][i+self.inverse_offset]
         return data   
+    
+
+class BBall_dataset(Dataset):
+    def __init__(self, args, root_path='.dataset/bball', flag='train', size=None,
+                 features='M', data_path='all_data.npy',
+                 target='OT', scale=True, timeenc=0, freq='h', seasonal_patterns=None):
+        # size [seq_len, label_len, pred_len]
+        self.args = args
+        # info
+        if size == None:
+            self.seq_len = args.seq_len
+            self.label_len = args.label_len
+            self.pred_len = args.pred_len
+        else:
+            self.seq_len = size[0]
+            self.label_len = size[1]
+            self.pred_len = size[2]
+        # init
+        assert flag in ['train', 'test', 'val']
+        type_map = {'train': 0, 'val': 1, 'test': 2}
+        self.set_type = type_map[flag]
+
+        self.features = features
+        self.target = target
+        self.scale = scale
+        self.timeenc = timeenc
+        self.freq = freq
+
+        self.root_path = root_path
+        self.data_path = data_path
+        self.__read_data__()
+
+    def __read_data__(self):
+        self.scaler = StandardScaler()
+        data = np.load(os.path.join(self.root_path,
+                                          self.data_path))
+
+        if self.scale:
+            train_data = data[split_indices[0]:split_indices[1]]
+            self.scaler.fit(train_data.values)
+            data = self.scaler.transform(data.values)
+        else:
+            data = data.values
+
+        # TDO : makes this parametrizable
+        train_share, val_share, test_share = 0.6, 0.2, 0.2 
+        n = self.data.shape[0]
+        self.data_x = data[:,:self.seq_len, :]
+        self.data_x = data[:,self.seq_len:self.seq_len+self.pred_len, :]
+
+        split_indices = [0 , int(np.floor(n * train_share)), int(np.floor(n * (train_share + val_share))), n] 
+
+        if self.features == 'MS':
+            self.data_y = self.data_y[:,:,0]
+        elif self.features == 'S':
+            self.data_x = self.data_x[:,:,0]
+            self.data_y = self.data_y[:,:,0]
+            
+        self.data_x = self.data_x[split_indices[self.set_type] : split_indices[self.set_type +1]]
+        self.data_y = self.data_y[split_indices[self.set_type] : split_indices[self.set_type +1]]
+
+
+    def __getitem__(self, index):
+        seq_x = self.data_x[index]
+        seq_y =  np.concatenate((seq_x[-self.args.label_len:,:], self.data_y[index]), axis = 0)
+        # x_mark and y_mark must be of shape [l, 4] and [p+t, 4]
+        seq_mark = np.arange(self.args.seq_len + self.args.pred_len) / (self.args.seq_len + self.args.pred_len -1) -0.5
+        seq_x_mark = np.concatenate((np.zeros((self.args.seq_len,3)),seq_mark[:self.args.seq_len].reshape(-1,1)), axis = 1)
+        seq_y_mark = np.concatenate((np.zeros((self.args.pred_len+self.args.label_len,3)),
+                                     seq_mark[self.args.seq_len- self.args.label_len:].reshape(-1,1)), axis = 1)
+
+        return seq_x, seq_y, seq_x_mark, seq_y_mark 
+
+    def __len__(self):
+        return len(self.data_x)
+
+    def inverse_transform(self, data):
+        return self.scaler.inverse_transform(data)
