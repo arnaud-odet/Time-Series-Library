@@ -889,7 +889,7 @@ class USC_dataset(Dataset):
 class BBall_dataset(Dataset):
     def __init__(self, args, root_path='.dataset/bball', flag='train', size=None,
                  features='M', data_path='all_data.npy',
-                 target='OT', scale=True, timeenc=0, freq='h', seasonal_patterns=None):
+                 target='OT', scale=False, timeenc=0, freq='h', seasonal_patterns=None):
         # size [seq_len, label_len, pred_len]
         self.args = args
         # info
@@ -921,20 +921,22 @@ class BBall_dataset(Dataset):
         data = np.load(os.path.join(self.root_path,
                                           self.data_path))
 
+        train_share, val_share, test_share = 0.6, 0.2, 0.2 
+        n = data.shape[0]
+        split_indices = [0 , int(np.floor(n * train_share)), int(np.floor(n * (train_share + val_share))), n] 
+
         if self.scale:
+            # Revoir : problème de dimension
             train_data = data[split_indices[0]:split_indices[1]]
-            self.scaler.fit(train_data.values)
-            data = self.scaler.transform(data.values)
+            self.scaler.fit(train_data)
+            data = self.scaler.transform(data)
         else:
-            data = data.values
+            data = data
 
         # TDO : makes this parametrizable
-        train_share, val_share, test_share = 0.6, 0.2, 0.2 
-        n = self.data.shape[0]
         self.data_x = data[:,:self.seq_len, :]
-        self.data_x = data[:,self.seq_len:self.seq_len+self.pred_len, :]
+        self.data_y = data[:,self.seq_len:self.seq_len+self.pred_len, :]
 
-        split_indices = [0 , int(np.floor(n * train_share)), int(np.floor(n * (train_share + val_share))), n] 
 
         if self.features == 'MS':
             self.data_y = self.data_y[:,:,0]

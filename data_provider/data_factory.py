@@ -17,7 +17,7 @@ data_dict = {
     'SWAT': SWATSegLoader,
     'UEA': UEAloader,
     'USC' : USC_dataset,
-    'bball' : BBall_dataset
+    'BBall' : BBall_dataset
 }
 
 
