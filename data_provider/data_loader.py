@@ -889,7 +889,7 @@ class USC_dataset(Dataset):
 class BBall_dataset(Dataset):
     def __init__(self, args, root_path='.dataset/bball', flag='train', size=None,
                  features='M', data_path='all_data.npy',
-                 target='OT', scale=False, timeenc=0, freq='h', seasonal_patterns=None):
+                 target='OT', scale=True, timeenc=0, freq='h', seasonal_patterns=None):
         # size [seq_len, label_len, pred_len]
         self.args = args
         # info
@@ -928,8 +928,8 @@ class BBall_dataset(Dataset):
         if self.scale:
             # Revoir : problème de dimension
             train_data = data[split_indices[0]:split_indices[1]]
-            self.scaler.fit(train_data)
-            data = self.scaler.transform(data)
+            self.scaler.fit(train_data.reshape(-1, train_data.shape[-1]))
+            data = self.scaler.transform(data.reshape(-1, data.shape[-1])).reshape(data.shape)
         else:
             data = data
 
@@ -963,4 +963,4 @@ class BBall_dataset(Dataset):
         return len(self.data_x)
 
     def inverse_transform(self, data):
-        return self.scaler.inverse_transform(data)
+        return self.scaler.inverse_transform(data.reshape(-1, data.shape[-1])).reshape(data.shape)

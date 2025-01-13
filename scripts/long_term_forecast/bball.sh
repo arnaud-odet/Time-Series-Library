@@ -4,15 +4,15 @@ root_path=./dataset/bball/
 data_path=all_data.npy
 model_id=BBall
 seq_len=24
-pred_len=26
+pred_len=24
 label_len=8
 data=BBall
 features=M
 d_lstm=128
 lstm_layers=1
-e_layers=2
-d_model=64
-n_heads=8
+e_layers=4
+d_model=256
+n_heads=16
 d_layers=1
 d_fc=128 
 factor=3
@@ -20,13 +20,13 @@ enc_in=22
 dec_in=22
 c_out=22
 des='Exp'
-batch_size=64
+batch_size=32
 itr=1
 dropout=0.1
 learning_rate=0.001
 optimizer=adamw
 wd=0.05
-train_epochs=10
+train_epochs=20
 patience=3
 
 
@@ -59,7 +59,7 @@ python -u run.py \
   --d_fc $d_fc \
   --dropout $dropout \
   --learning_rate $learning_rate \
-  --optimizer adam \
+  --optimizer $optimizer \
   --wd $wd \
   --train_epochs $train_epochs \
   --patience $patience \
@@ -96,7 +96,7 @@ python -u run.py \
   --d_fc $d_fc \
   --dropout $dropout \
   --learning_rate $learning_rate \
-  --optimizer adam \
+  --optimizer $optimizer \
   --wd $wd \
   --down_sampling_layers 1 \
   --down_sampling_method avg \
@@ -137,7 +137,7 @@ python -u run.py \
   --d_fc $d_fc \
   --dropout $dropout \
   --learning_rate $learning_rate \
-  --optimizer adam \
+  --optimizer $optimizer \
   --wd $wd \
   --train_epochs $train_epochs \
   --patience $patience \
@@ -213,7 +213,7 @@ python -u run.py \
   --d_fc $d_fc \
   --dropout $dropout \
   --learning_rate $learning_rate \
-  --optimizer adam \
+  --optimizer $optimizer \
   --wd $wd \
   --train_epochs $train_epochs \
   --patience $patience \
@@ -251,7 +251,7 @@ python -u run.py \
   --d_fc $d_fc \
   --dropout $dropout \
   --learning_rate $learning_rate \
-  --optimizer adam \
+  --optimizer $optimizer \
   --wd $wd \
   --train_epochs $train_epochs \
   --patience $patience \
@@ -288,7 +288,7 @@ python -u run.py \
   --d_fc $d_fc \
   --dropout $dropout \
   --learning_rate $learning_rate \
-  --optimizer adam \
+  --optimizer $optimizer \
   --wd $wd \
   --train_epochs $train_epochs \
   --patience $patience \
@@ -324,7 +324,7 @@ python -u run.py \
   --d_fc $d_fc \
   --dropout $dropout \
   --learning_rate $learning_rate \
-  --optimizer adam \
+  --optimizer $optimizer \
   --wd $wd \
   --train_epochs $train_epochs \
   --patience $patience \
