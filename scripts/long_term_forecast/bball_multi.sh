@@ -8,10 +8,10 @@ pred_len=24
 label_len=8
 data=BBall
 features=M
-d_lstm=128
+d_lstm=256
 lstm_layers=1
-e_layers=4
-d_model=256
+e_layers=2
+d_model=128
 n_heads=16
 d_layers=1
 d_fc=128 
@@ -22,12 +22,12 @@ c_out=22
 des='Exp'
 batch_size=32
 itr=1
-dropout=0.1
+dropout=0.25
 learning_rate=0.001
 optimizer=adamw
 wd=0.05
-train_epochs=20
-patience=3
+train_epochs=24
+patience=4
 
 
 # iTransformer
@@ -143,7 +143,6 @@ python -u run.py \
   --patience $patience \
   --embed fixed \
   --inverse
-
 
 
 # TimesNet

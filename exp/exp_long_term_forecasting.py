@@ -92,6 +92,11 @@ class Exp_Long_Term_Forecast(Exp_Basic):
 
         model_optim = self._select_optimizer()
         criterion = self._select_criterion()
+        # ADDED : Scheduler
+        scheduler = torch.optim.lr_scheduler.OneCycleLR(model_optim, 
+                                                        max_lr=self.args.learning_rate,
+                                                        steps_per_epoch=len(train_loader), 
+                                                        epochs=self.args.train_epochs)
 
         if self.args.use_amp:
             scaler = torch.cuda.amp.GradScaler()
@@ -149,20 +154,25 @@ class Exp_Long_Term_Forecast(Exp_Basic):
                 else:
                     loss.backward()
                     model_optim.step()
+                # ADDED : scheduler        
+                scheduler.step()
 
             print("Epoch: {} cost time: {}".format(epoch + 1, time.time() - epoch_time))
             train_loss = np.average(train_loss)
             vali_loss = self.vali(vali_data, vali_loader, criterion)
             test_loss = self.vali(test_data, test_loader, criterion)
 
-            print("Epoch: {0}, Steps: {1} | Train Loss: {2:.7f} Vali Loss: {3:.7f} Test Loss: {4:.7f}".format(
-                epoch + 1, train_steps, train_loss, vali_loss, test_loss))
+            #print("Epoch: {0}, Steps: {1} | Train Loss: {2:.7f} Vali Loss: {3:.7f} Test Loss: {4:.7f}".format(
+            #    epoch + 1, train_steps, train_loss, vali_loss, test_loss))
+            print("Epoch: {0}, Future Learning Rate : {1:.4e},Steps: {2} | Train Loss: {3:.4e} Vali Loss: {4:.4e} Test Loss: {5:.4e}".format(
+                epoch + 1, model_optim.param_groups[0]['lr'],train_steps, train_loss, vali_loss, test_loss))
             early_stopping(vali_loss, self.model, path)
             if early_stopping.early_stop:
                 print("Early stopping")
                 break
 
-            adjust_learning_rate(model_optim, epoch + 1, self.args)
+            # ADDED : scheduler
+            #adjust_learning_rate(model_optim, epoch + 1, self.args)
 
         best_model_path = path + '/' + 'checkpoint.pth'
         self.model.load_state_dict(torch.load(best_model_path))

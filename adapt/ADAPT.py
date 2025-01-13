@@ -47,7 +47,7 @@ class Model(nn.Module):
         # L: Lane number
         # D: Feature size
 
-        mapping = usc_data_translator(mapping, self.args, verbose=False)
+        mapping = usc_data_translator(mapping, self.args, verbose=True)
 
         batch_size = len(mapping)
         if validate:
@@ -86,7 +86,7 @@ class Model(nn.Module):
         agent_features, lane_features = self.encode_polylines(
                 agent_data, lane_data)
         
-        #print(f'{agent_features.shape=}, {lane_features.shape=}')
+        print(f'{agent_features.shape=}, {lane_features.shape=}')
 
         # predictions.shape = (N, M, 6, 30, 2)
         predictions, logits = self.trajectory_decoder(
