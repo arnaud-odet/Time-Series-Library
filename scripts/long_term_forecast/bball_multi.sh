@@ -29,6 +29,42 @@ wd=0.05
 train_epochs=36
 patience=4
 
+# SABFormer
+python -u run.py \
+  --model SABFormer \
+  --task_name $task_name \
+  --is_training $is_training \
+  --root_path $root_path \
+  --data_path $data_path \
+  --model_id $model_id \
+  --seq_len $seq_len \
+  --label_len $label_len \
+  --pred_len $pred_len \
+  --features $features \
+  --data $data \
+  --e_layers $e_layers \
+  --d_model $d_model \
+  --d_layers $d_layers \
+  --factor $factor \
+  --enc_in $enc_in \
+  --dec_in $dec_in \
+  --c_out $c_out \
+  --des $des \
+  --n_heads $n_heads \
+  --batch_size $batch_size \
+  --itr $itr \
+  --d_lstm $d_lstm \
+  --lstm_layers $lstm_layers \
+  --d_fc $d_fc \
+  --dropout $dropout \
+  --learning_rate $learning_rate \
+  --optimizer $optimizer \
+  --wd $wd \
+  --train_epochs $train_epochs \
+  --patience $patience \
+  --embed fixed \
+  --inverse
+
 
 # iTransformer
 python -u run.py \
