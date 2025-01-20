@@ -8,17 +8,36 @@ class PositionalEncoding(nn.Module):
     def __init__(self, d_model, dropout=0.1, max_len=5000):
         super().__init__()
         self.dropout = nn.Dropout(p=dropout)
+        self.d_model = d_model
 
         position = torch.arange(max_len).unsqueeze(1)
         div_term = torch.exp(torch.arange(0, d_model, 2) * (-math.log(10000.0) / d_model))
-        pe = torch.zeros(max_len, 1, d_model)
-        pe[:, 0, 0::2] = torch.sin(position * div_term)
-        pe[:, 0, 1::2] = torch.cos(position * div_term)
+        
+        pe = torch.zeros(max_len, d_model)
+        pe[:, 0::2] = torch.sin(position * div_term)
+        pe[:, 1::2] = torch.cos(position * div_term)
+        
+        # Reshape to [1, max_len, 1, d_model]
+        pe = pe.unsqueeze(0).unsqueeze(2)
+        
         self.register_buffer('pe', pe)
 
     def forward(self, x):
-        x = x + self.pe[:x.size(1)]
-        return self.dropout(x)
+        """
+        Args:
+            x: Tensor of shape [batch_size, seq_len, n_agents, features]
+        """
+        # Add a linear layer to project input to d_model dimensions if needed
+        if not hasattr(self, 'project'):
+            self.project = nn.Linear(x.size(-1), self.d_model).to(x.device)
+        
+        # Project input to d_model dimensions
+        x = self.project(x)
+        
+        # Add positional encoding
+        return self.dropout(x + self.pe[:, :x.size(1), :, :])
+
+
 
 class SetAttentionBlock(nn.Module):
     def __init__(self, dim_in, dim_out, num_heads, dropout=0.1):
@@ -107,25 +126,11 @@ class Model(nn.Module):
         self.dropout = nn.Dropout(configs.dropout)
         self.layer_norm_module_list = nn.ModuleList()
         self.skip_connections_module = nn.ModuleList()
-
-        ## Step 1: LSTM layer to embed the past trajectories 
-        self.lstm = nn.ModuleList()
-        lstm_previous_size = configs.enc_in
-        for i in range(configs.lstm_layers):
-            self.lstm.append(nn.LSTM(lstm_previous_size, configs.d_lstm, batch_first=True))
-            if self.skip_connections:
-                self.skip_connections_module.append(nn.Linear(lstm_previous_size,configs.d_lstm))
-            lstm_previous_size = configs.d_lstm
-            if self.layer_norm :
-                self.layer_norm_module_list.append(nn.LayerNorm(configs.d_lstm))  
-
-        self.projection = nn.Linear(configs.d_lstm, configs.d_model)
         
-        ## Step 2: SAB_based encoder
+        ## Step 1: SAB_based encoder
         self.encoder = SAB_Based_Encoder(configs)
         
-        
-        ## Step 3: Feed-forward network to predict future trajectories
+        ## Step 2: Feed-forward network to predict future trajectories
         self.linear_layers = nn.ModuleList()  
         ff_previous_size = configs.d_model
         for i in range(configs.d_layers):
@@ -134,47 +139,33 @@ class Model(nn.Module):
             if self.layer_norm :
                 self.layer_norm_module_list.append(nn.LayerNorm(configs.d_fc))        
         
-        ## Step 4: final output layer
+        ## Step 3: final output layer
         self.output_layer = nn.Linear(configs.d_fc, self.pred_len)
 
 
     def forecast(self, x_enc, x_mark_enc, x_dec, x_mark_dec):
+
         
         # x shape: (batch_size, input_len, n_features)
         batch_size = x_enc.shape[0]
-        #print(f"Shape step 1 : {x_enc.shape} - input")
-        # Step 1: LSTM
-        for i,lstm in enumerate(self.lstm) :
-            residuals = x_enc
-            x_enc, _ = lstm(x_enc)
-            if self.skip_connections :
-                x_enc = x_enc + self.skip_connections_module[i](residuals)
-            if self.layer_norm:
-                x_enc = self.layer_norm_module_list[i](x_enc)
-            x_enc = self.dropout(x_enc)                 
-        #print(f"Shape step 2 : {x_enc.shape} - post LSTM")
-        x_enc = self.projection(x_enc)         
-        #print(f"Shape step 3 : {x_enc.shape} - post projection")
+        x_enc = x_enc.reshape(x_enc.shape[0], x_enc.shape[1], int(x_enc.shape[2] / 2), 2)
 
-        # Step 2: Encoder
+        # Step 1: Encoder
         x_enc = self.encoder(x_enc)  # Shape: (batch_size, transformer_embed_dim)
-        #print(f"Shape step 4 : {x_enc.shape} - post Transformer")
 
-        # Step 3: Fully connected layers       
+        # Step 2: Fully connected layers       
         for i,linear in enumerate(self.linear_layers):
             residuals = x_enc  
             x_enc = linear(x_enc) 
             if residuals.shape[-1] == x_enc.shape[-1] and self.skip_connections: # Only adding residuals if dimensions match
                 x_enc = x_enc + residuals
             if self.layer_norm :
-                x_enc = self.layer_norm_module_list[i+len(self.lstm)](x_enc)
+                x_enc = self.layer_norm_module_list[i](x_enc)
             x_enc = self.dropout(x_enc)  
             x_enc = F.relu(x_enc)    
-        #print(f"Shape step 5 : {x_enc.shape} - post Linear")
         x_enc = self.output_layer(x_enc)
-        #print(f"Shape step 6 : {x_enc.shape} - post output layer")
-        x_enc = x_enc.permute(0,2,1)[:,-self.pred_len:,:self.c_out]  # Shape: (batch_size, output_len * n_output_feature)   
-        #print(f"Shape step 7 : {x_enc.shape} - post permute & truncate")
+        x_enc = x_enc.reshape(x_enc.shape[0], x_enc.shape[1], x_enc.shape[2] * x_enc.shape[3])
+        x_enc = x_enc[:,-self.pred_len:,:self.c_out]  # Shape: (batch_size, output_len * n_output_feature)   
          
         return x_enc
    
