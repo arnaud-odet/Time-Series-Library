@@ -178,12 +178,12 @@ python -u run.py \
   --pred_len $pred_len \
   --features $features \
   --data $data \
-  --lstm_layers 3 \
-  --d_lstm 256 \
+  --lstm_layers 1 \
+  --d_lstm 128 \
   --e_layers 3 \
-  --d_model 256 \
+  --d_model 128 \
   --d_layers 1 \
-  --d_fc 256 \
+  --d_fc 128 \
   --factor $factor \
   --enc_in $enc_in \
   --dec_in $dec_in \
@@ -213,12 +213,224 @@ python -u run.py \
   --pred_len $pred_len \
   --features $features \
   --data $data \
-  --lstm_layers 3 \
-  --d_lstm 256 \
+  --lstm_layers 1 \
+  --d_lstm 128 \
   --e_layers 4 \
-  --d_model 256 \
+  --d_model 128 \
   --d_layers 1 \
-  --d_fc 256 \
+  --d_fc 128 \
+  --factor $factor \
+  --enc_in $enc_in \
+  --dec_in $dec_in \
+  --c_out $c_out \
+  --des $des \
+  --n_heads $n_heads \
+  --batch_size $batch_size \
+  --itr $itr \
+  --dropout $dropout \
+  --learning_rate $learning_rate \
+  --optimizer $optimizer \
+  --wd $wd \
+  --train_epochs $train_epochs \
+  --patience $patience \
+  --embed fixed \
+  --inverse
+
+
+python -u run.py \
+  --model $model \
+  --task_name $task_name \
+  --is_training $is_training \
+  --root_path $root_path \
+  --data_path $data_path \
+  --model_id $model_id \
+  --seq_len $seq_len \
+  --label_len $label_len \
+  --pred_len $pred_len \
+  --features $features \
+  --data $data \
+  --lstm_layers 2 \
+  --d_lstm 128 \
+  --e_layers 3 \
+  --d_model 128 \
+  --d_layers 1 \
+  --d_fc 128 \
+  --factor $factor \
+  --enc_in $enc_in \
+  --dec_in $dec_in \
+  --c_out $c_out \
+  --des $des \
+  --n_heads $n_heads \
+  --batch_size $batch_size \
+  --itr $itr \
+  --dropout $dropout \
+  --learning_rate $learning_rate \
+  --optimizer $optimizer \
+  --wd $wd \
+  --train_epochs $train_epochs \
+  --patience $patience \
+  --embed fixed \
+  --inverse
+
+  python -u run.py \
+  --model $model \
+  --task_name $task_name \
+  --is_training $is_training \
+  --root_path $root_path \
+  --data_path $data_path \
+  --model_id $model_id \
+  --seq_len $seq_len \
+  --label_len $label_len \
+  --pred_len $pred_len \
+  --features $features \
+  --data $data \
+  --lstm_layers 2 \
+  --d_lstm 128 \
+  --e_layers 4 \
+  --d_model 128 \
+  --d_layers 1 \
+  --d_fc 128 \
+  --factor $factor \
+  --enc_in $enc_in \
+  --dec_in $dec_in \
+  --c_out $c_out \
+  --des $des \
+  --n_heads $n_heads \
+  --batch_size $batch_size \
+  --itr $itr \
+  --dropout $dropout \
+  --learning_rate $learning_rate \
+  --optimizer $optimizer \
+  --wd $wd \
+  --train_epochs $train_epochs \
+  --patience $patience \
+  --embed fixed \
+  --inverse
+
+python -u run.py \
+  --model $model \
+  --task_name $task_name \
+  --is_training $is_training \
+  --root_path $root_path \
+  --data_path $data_path \
+  --model_id $model_id \
+  --seq_len $seq_len \
+  --label_len $label_len \
+  --pred_len $pred_len \
+  --features $features \
+  --data $data \
+  --lstm_layers 1 \
+  --d_lstm 512 \
+  --e_layers 3 \
+  --d_model 512 \
+  --d_layers 1 \
+  --d_fc 512 \
+  --factor $factor \
+  --enc_in $enc_in \
+  --dec_in $dec_in \
+  --c_out $c_out \
+  --des $des \
+  --n_heads $n_heads \
+  --batch_size $batch_size \
+  --itr $itr \
+  --dropout $dropout \
+  --learning_rate $learning_rate \
+  --optimizer $optimizer \
+  --wd $wd \
+  --train_epochs $train_epochs \
+  --patience $patience \
+  --embed fixed \
+  --inverse
+
+  python -u run.py \
+  --model $model \
+  --task_name $task_name \
+  --is_training $is_training \
+  --root_path $root_path \
+  --data_path $data_path \
+  --model_id $model_id \
+  --seq_len $seq_len \
+  --label_len $label_len \
+  --pred_len $pred_len \
+  --features $features \
+  --data $data \
+  --lstm_layers 1 \
+  --d_lstm 512 \
+  --e_layers 4 \
+  --d_model 512 \
+  --d_layers 1 \
+  --d_fc 512 \
+  --factor $factor \
+  --enc_in $enc_in \
+  --dec_in $dec_in \
+  --c_out $c_out \
+  --des $des \
+  --n_heads $n_heads \
+  --batch_size $batch_size \
+  --itr $itr \
+  --dropout $dropout \
+  --learning_rate $learning_rate \
+  --optimizer $optimizer \
+  --wd $wd \
+  --train_epochs $train_epochs \
+  --patience $patience \
+  --embed fixed \
+  --inverse
+
+
+python -u run.py \
+  --model $model \
+  --task_name $task_name \
+  --is_training $is_training \
+  --root_path $root_path \
+  --data_path $data_path \
+  --model_id $model_id \
+  --seq_len $seq_len \
+  --label_len $label_len \
+  --pred_len $pred_len \
+  --features $features \
+  --data $data \
+  --lstm_layers 2 \
+  --d_lstm 512 \
+  --e_layers 3 \
+  --d_model 512 \
+  --d_layers 1 \
+  --d_fc 512 \
+  --factor $factor \
+  --enc_in $enc_in \
+  --dec_in $dec_in \
+  --c_out $c_out \
+  --des $des \
+  --n_heads $n_heads \
+  --batch_size $batch_size \
+  --itr $itr \
+  --dropout $dropout \
+  --learning_rate $learning_rate \
+  --optimizer $optimizer \
+  --wd $wd \
+  --train_epochs $train_epochs \
+  --patience $patience \
+  --embed fixed \
+  --inverse
+
+  python -u run.py \
+  --model $model \
+  --task_name $task_name \
+  --is_training $is_training \
+  --root_path $root_path \
+  --data_path $data_path \
+  --model_id $model_id \
+  --seq_len $seq_len \
+  --label_len $label_len \
+  --pred_len $pred_len \
+  --features $features \
+  --data $data \
+  --lstm_layers 2 \
+  --d_lstm 512 \
+  --e_layers 4 \
+  --d_model 512 \
+  --d_layers 1 \
+  --d_fc 512 \
   --factor $factor \
   --enc_in $enc_in \
   --dec_in $dec_in \
