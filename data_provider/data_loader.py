@@ -797,19 +797,22 @@ class USC_dataset(Dataset):
         vx_coords = [False]*3 + [i %4 == 1 for i in range(3, self.data_x.shape[2])]
         vy_coords = [False]*3 + [i %4 == 2 for i in range(3, self.data_x.shape[2])]
         if self.input_features == 'V':
-            mask = [x or y or b for x,y,b in zip(vx_coords,vy_coords,base_mask)]
-        else :
+            mask = [vx or vy or b for vx,vy,b in zip(vx_coords,vy_coords,base_mask)]
+        elif self.input_features == 'P':
             mask = [x or y or b for x,y,b in zip(x_coords,y_coords,base_mask)]
+            target_index = 3 + 8*4
+        else :
+            mask = [x or y or vx or vy or b for x,y,vx,vy,b in zip(x_coords,y_coords,vx_coords,vy_coords,base_mask)]
                               
         if self.features == 'M': # multivariate precicts multivariate
             self.data_x = self.data_x[:,:,mask]
             self.data_y = self.data_y[:,:,mask]
         elif self.features == 'MS' : # multivariate precicts univariate
             self.data_x = self.data_x[:,:,mask]
-            self.data_y = np.expand_dims(self.data_y[:,:,1], np.newaxis)      
+            self.data_y = np.expand_dims(self.data_y[:,:,target_index], np.newaxis)      
         elif self.features == 'S': # univariate precicts univariate
-            self.data_x = np.expand_dims(self.data_x[:,:,1], np.newaxis)
-            self.data_y = np.expand_dims(self.data_y[:,:,1], np.newaxis)
+            self.data_x = np.expand_dims(self.data_x[:,:,target_index], np.newaxis)
+            self.data_y = np.expand_dims(self.data_y[:,:,target_index], np.newaxis)
 
         if self.scale:
             train_data = np.concatenate((self.data_x[split_indices[0] : split_indices[1]],
@@ -829,12 +832,17 @@ class USC_dataset(Dataset):
                     for i in range(start_col, start_col + 30):
                         self.scaler['mean'].append(train_data[:,i].mean())
                         self.scaler['scale'].append(train_data[:,i].std())
-                else : # Custom standardization takin into account the pitch 
+                elif self.input_features == 'P' : # Custom standardization takin into account the pitch 
                     for i in range(15):
                         self.scaler['mean'].append(50) # Center on the x-axis
                         self.scaler['scale'].append(50)
                         self.scaler['mean'].append(35) # Center on the y-axis
                         self.scaler['scale'].append(50) # Same scale as for x not to artificially increase the y displacement
+                else :
+                    #################### 
+                    ###     To Do    ###
+                    ####################
+                    pass
             
             #offset_x = 1 if self.use_action_progress and (self.features == 'M' or self.feature == 'MS') else 0
             #offset_y = 1 if self.use_action_progress  and self.features == 'M' else 0
