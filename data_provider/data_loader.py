@@ -839,10 +839,19 @@ class USC_dataset(Dataset):
                         self.scaler['mean'].append(35) # Center on the y-axis
                         self.scaler['scale'].append(50) # Same scale as for x not to artificially increase the y displacement
                 else :
-                    #################### 
-                    ###     To Do    ###
-                    ####################
-                    pass
+                    for i in range(15):
+                        # x scaling
+                        self.scaler['mean'].append(50) # Center on the x-axis
+                        self.scaler['scale'].append(50)
+                        # y scaling
+                        self.scaler['mean'].append(35) # Center on the y-axis
+                        self.scaler['scale'].append(50) # Same scale as for x not to artificially increase the y displacement                        
+                        # vx scaling
+                        self.scaler['mean'].append(train_data[:,start_col + 4*i + 2].mean())
+                        self.scaler['scale'].append(train_data[:,start_col + 4*i + 2].std())
+                        # vy scaling
+                        self.scaler['mean'].append(train_data[:,start_col + 4*i + 3].mean())
+                        self.scaler['scale'].append(train_data[:,start_col + 4*i + 3].std())                        
             
             #offset_x = 1 if self.use_action_progress and (self.features == 'M' or self.feature == 'MS') else 0
             #offset_y = 1 if self.use_action_progress  and self.features == 'M' else 0
