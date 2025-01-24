@@ -768,6 +768,8 @@ class USC_dataset(Dataset):
         self.input_features = args.input_features
         self.use_action_progress = args.use_action_progress
         self.use_offense = args.use_offense 
+        self.consider_only_offense = args.consider_only_offense 
+        
         self.scale = scale
         
         
@@ -785,12 +787,23 @@ class USC_dataset(Dataset):
         self.data_x = np.load(os.path.join(self.root_path, self.X_filename))
         self.data_y = np.load(os.path.join(self.root_path, self.y_filename))
 
+        if self.consider_only_offense :
+            off_mask = self.data_x[:,0,2].astype(bool)
+            self.data_x = self.data_x[off_mask]
+            self.data_y = self.data_y[off_mask]
+            self.use_offense = False
+
         # TDO : makes this parametrizable
         train_share, val_share, test_share = 0.6, 0.2, 0.2 
         n = self.data_x.shape[0]
 
         split_indices = [0 , int(np.floor(n * train_share)), int(np.floor(n * (train_share + val_share))), n] 
+        # Columns order :
+        ### 0 : action id
+        ### 1 : target
+        ### 2 : offense
         
+         
         base_mask = [False, self.use_action_progress, self.use_offense] + [False] * 60
         x_coords = [False]*3 + [i %4 == 3 for i in range(3, self.data_x.shape[2])]
         y_coords = [False]*3 + [i %4 == 0 for i in range(3, self.data_x.shape[2])]
@@ -800,9 +813,10 @@ class USC_dataset(Dataset):
             mask = [vx or vy or b for vx,vy,b in zip(vx_coords,vy_coords,base_mask)]
         elif self.input_features == 'P':
             mask = [x or y or b for x,y,b in zip(x_coords,y_coords,base_mask)]
-            target_index = 3 + 8*4
         else :
             mask = [x or y or vx or vy or b for x,y,vx,vy,b in zip(x_coords,y_coords,vx_coords,vy_coords,base_mask)]
+                              
+        target_index = 1 #Action progression is in the second column on the last dimension                      
                               
         if self.features == 'M': # multivariate precicts multivariate
             self.data_x = self.data_x[:,:,mask]
