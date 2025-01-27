@@ -215,9 +215,10 @@ class Exp_Long_Term_Forecast(Exp_Basic):
                 outputs = outputs.detach().cpu().numpy()
                 batch_y = batch_y.detach().cpu().numpy()
                 if test_data.scale and self.args.inverse:
-                    shape = outputs.shape
-                    outputs = test_data.inverse_transform(outputs.reshape(shape[0] * shape[1], -1)).reshape(shape)
-                    batch_y = test_data.inverse_transform(batch_y.reshape(shape[0] * shape[1], -1)).reshape(shape)
+                    outputs_shape = outputs.shape
+                    batch_y_shape = batch_y.shape
+                    outputs = test_data.inverse_transform(outputs.reshape(outputs_shape[0] * outputs_shape[1], -1)).reshape(outputs_shape)
+                    batch_y = test_data.inverse_transform(batch_y.reshape(batch_y_shape[0] * batch_y_shape[1], -1)).reshape(batch_y_shape)
         
                 outputs = outputs[:, :, f_dim:]
                 batch_y = batch_y[:, :, f_dim:]
@@ -264,7 +265,7 @@ class Exp_Long_Term_Forecast(Exp_Basic):
             dtw = 'not calculated'
             
 
-        mae, mse, rmse, mape, mspe = metric(preds, trues)
+        mae, mse, rmse, mape, mspe, fde = metric(preds, trues)
         print('mse:{}, mae:{}, dtw:{}'.format(mse, mae, dtw))
         f = open("result_long_term_forecast.txt", 'a')
         f.write(setting + "  \n")
@@ -284,7 +285,7 @@ class Exp_Long_Term_Forecast(Exp_Basic):
         metrics = {'nb_params':trainable_param_count+ non_trainable_param_count, 
                    'nb_tr_params':trainable_param_count,
                    'nb_nontr_params':non_trainable_param_count,
-                   'mae': mae, 'mse': mse, 'rmse': rmse, 'mape': mape, 'mspe': mspe}
+                   'mae': mae, 'mse': mse, 'rmse': rmse, 'mape': mape, 'mspe': mspe, 'fde':fde}
         
         log(metrics=metrics, args = self.args)
 

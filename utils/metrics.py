@@ -30,6 +30,9 @@ def MAPE(pred, true):
 def MSPE(pred, true):
     return np.mean(np.square((true - pred) / true))
 
+def FDE(pred,true):
+    return RMSE(pred[:,-1,:], true[:,-1,:])
+
 
 def metric(pred, true):
     mae = MAE(pred, true)
@@ -37,5 +40,6 @@ def metric(pred, true):
     rmse = RMSE(pred, true)
     mape = MAPE(pred, true)
     mspe = MSPE(pred, true)
+    fde = FDE(pred, true)
 
-    return mae, mse, rmse, mape, mspe
+    return mae, mse, rmse, mape, mspe, fde

@@ -787,14 +787,17 @@ class USC_dataset(Dataset):
         self.data_x = np.load(os.path.join(self.root_path, self.X_filename))
         self.data_y = np.load(os.path.join(self.root_path, self.y_filename))
 
+        # Args correction and offense filter
         if self.consider_only_offense :
             off_mask = self.data_x[:,0,2].astype(bool)
             self.data_x = self.data_x[off_mask]
             self.data_y = self.data_y[off_mask]
             self.use_offense = False
+        if self.features == 'MS' :
+            self.use_action_progress = True
 
         # TDO : makes this parametrizable
-        train_share, val_share, test_share = 0.6, 0.2, 0.2 
+        train_share, val_share, test_share = 0.7, 0.15, 0.15 
         n = self.data_x.shape[0]
 
         split_indices = [0 , int(np.floor(n * train_share)), int(np.floor(n * (train_share + val_share))), n] 
@@ -823,19 +826,25 @@ class USC_dataset(Dataset):
             self.data_y = self.data_y[:,:,mask]
         elif self.features == 'MS' : # multivariate precicts univariate
             self.data_x = self.data_x[:,:,mask]
-            self.data_y = np.expand_dims(self.data_y[:,:,target_index], np.newaxis)      
+            self.data_y = np.expand_dims(self.data_y[:,:,target_index], 2)      
         elif self.features == 'S': # univariate precicts univariate
-            self.data_x = np.expand_dims(self.data_x[:,:,target_index], np.newaxis)
-            self.data_y = np.expand_dims(self.data_y[:,:,target_index], np.newaxis)
+            self.data_x = np.expand_dims(self.data_x[:,:,target_index], 2)
+            self.data_y = np.expand_dims(self.data_y[:,:,target_index], 2)
 
         if self.scale:
-            train_data = np.concatenate((self.data_x[split_indices[0] : split_indices[1]],
+            if not self.features == 'MS' :
+                train_data = np.concatenate((self.data_x[split_indices[0] : split_indices[1]],
                                          self.data_y[split_indices[0] : split_indices[1]]), axis = 1)
+            else :
+                train_data = self.data_x[split_indices[0] : split_indices[1]]
             train_data = train_data.reshape((-1,train_data.shape[2]))
             start_col = 0
-            if self.use_action_progress or self.features == 'S' or self.features == 'MS' :
-                self.scaler['mean'].append(train_data[:,0].mean())
-                self.scaler['scale'].append(train_data[:,0].std())
+            if self.use_action_progress or self.features == 'S' :
+                #self.scaler['mean'].append(train_data[:,0].mean())
+                #self.scaler['scale'].append(train_data[:,0].std())
+                # No scaling of the target feature as it is a difference between the end of sequence and value at all points.
+                self.scaler['mean'].append(0)
+                self.scaler['scale'].append(1)                
                 start_col +=1
             if self.use_offense :
                 self.scaler['mean'].append(0)
@@ -888,7 +897,10 @@ class USC_dataset(Dataset):
 
     def __getitem__(self, index):
         seq_x = self.data_x[index]
-        seq_y =  np.concatenate((seq_x[-self.args.label_len:,:], self.data_y[index]), axis = 0)
+        if self.features == 'MS':
+            seq_y =  np.concatenate((np.expand_dims(seq_x[-self.args.label_len:,0],1), self.data_y[index]), axis = 0)
+        else :    
+            seq_y =  np.concatenate((seq_x[-self.args.label_len:,:], self.data_y[index]), axis = 0)
         # x_mark and y_mark must be of shape [l, 4] and [p+t, 4]
         seq_mark = np.arange(self.args.seq_len + self.args.pred_len) / (self.args.seq_len + self.args.pred_len -1) -0.5
         seq_x_mark = np.concatenate((np.zeros((self.args.seq_len,3)),seq_mark[:self.args.seq_len].reshape(-1,1)), axis = 1)

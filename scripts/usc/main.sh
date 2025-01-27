@@ -2,11 +2,18 @@
 
 # List of scripts to run
 scripts=(
-    "./scripts/long_term_forecast/ETT_script/PatchTST_ETTm2.sh"
-    "./scripts/long_term_forecast/ETT_script/LSTransformer_ETTm2.sh"
-    "./scripts/long_term_forecast/ETT_script/TimeMixer_ETTm2.sh"
-    "./scripts/long_term_forecast/ETT_script/DLinear_ETTm2.sh"
-    # Add more scripts as needed
+    "./scripts/usc/USC_S_LSTM.sh"
+    "./scripts/usc/USC_MS_LSTM.sh"
+    "./scripts/usc/USC_S_Transformer.sh"
+    "./scripts/usc/USC_MS_Transformer.sh"
+    "./scripts/usc/USC_S_DLinear.sh"
+    "./scripts/usc/USC_MS_DLinear.sh" 
+    "./scripts/usc/USC_S_iTransformer.sh"
+    "./scripts/usc/USC_MS_iTransformer.sh" 
+    "./scripts/usc/USC_S_PatchTST.sh"
+    "./scripts/usc/USC_MS_PatchTST.sh" 
+
+
 )
 
 # Loop through and execute each script
