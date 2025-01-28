@@ -12,7 +12,12 @@ scripts=(
     "./scripts/usc/USC_MS_iTransformer.sh" 
     "./scripts/usc/USC_S_PatchTST.sh"
     "./scripts/usc/USC_MS_PatchTST.sh" 
-
+    "./scripts/usc/USC_S_TimesNet.sh"
+    "./scripts/usc/USC_MS_TimesNet.sh" 
+    "./scripts/usc/USC_S_TimeMixer.sh"
+    "./scripts/usc/USC_MS_TimeMixer.sh" 
+    "./scripts/usc/USC_S_Nonstationary_Transformer.sh"
+    "./scripts/usc/USC_MS_Nonstationary_Transformer.sh" 
 
 )
 

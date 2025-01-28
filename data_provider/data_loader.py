@@ -764,7 +764,7 @@ class USC_dataset(Dataset):
         self.features = args.features
         self.root_path = args.root_path
         self.X_filename = f'PVTO_seq{args.seq_len}_tar{args.seq_len}_X.npy'
-        self.y_filename = f'PVTO_seq{args.seq_len}_tar{args.seq_len}_X.npy'
+        self.y_filename = f'PVTO_seq{args.seq_len}_tar{args.seq_len}_y.npy'
         self.input_features = args.input_features
         self.use_action_progress = args.use_action_progress
         self.use_offense = args.use_offense 
@@ -840,11 +840,11 @@ class USC_dataset(Dataset):
             train_data = train_data.reshape((-1,train_data.shape[2]))
             start_col = 0
             if self.use_action_progress or self.features == 'S' :
-                #self.scaler['mean'].append(train_data[:,0].mean())
-                #self.scaler['scale'].append(train_data[:,0].std())
+                self.scaler['mean'].append(train_data[:,0].mean())
+                self.scaler['scale'].append(train_data[:,0].std())
                 # No scaling of the target feature as it is a difference between the end of sequence and value at all points.
-                self.scaler['mean'].append(0)
-                self.scaler['scale'].append(1)                
+                #self.scaler['mean'].append(0)
+                #self.scaler['scale'].append(1)                
                 start_col +=1
             if self.use_offense :
                 self.scaler['mean'].append(0)

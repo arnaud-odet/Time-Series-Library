@@ -29,6 +29,11 @@ def data_provider(args, flag):
     drop_last = False
     batch_size = args.batch_size
     freq = args.freq
+    
+    if hasattr(args, 'scale') == False:
+        scale = args.model_id[:2] != 'm4'
+    else :
+        scale = args.scale
 
     if args.task_name == 'anomaly_detection':
         drop_last = False
@@ -75,6 +80,7 @@ def data_provider(args, flag):
             features=args.features,
             target=args.target,
             timeenc=timeenc,
+            scale=scale,
             freq=freq,
             seasonal_patterns=args.seasonal_patterns
         )
