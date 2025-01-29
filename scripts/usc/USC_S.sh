@@ -24,7 +24,7 @@ itr=1
 dropout=0.1
 learning_rate=0.005
 optimizer=adamw
-wd=0.05
+wd=0.02
 train_epochs=36
 patience=36
 
