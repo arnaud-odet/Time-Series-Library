@@ -88,8 +88,10 @@ class Exp_Long_Term_Forecast(Exp_Basic):
         time_now = time.time()
         time_start = time.time()
 
+        left_time = 1000
+        
         train_steps = len(train_loader)
-        early_stopping = EarlyStopping(patience=self.args.patience, verbose=True)
+        early_stopping = EarlyStopping(patience=self.args.patience, verbose=False)
 
         model_optim = self._select_optimizer()
         criterion = self._select_criterion()
@@ -139,13 +141,16 @@ class Exp_Long_Term_Forecast(Exp_Basic):
                     loss = criterion(outputs, batch_y)
                     train_loss.append(loss.item())
 
-                if (i + 1) % 100 == 0:
-                    print("\titers: {0}, epoch: {1} | loss: {2:.7f}".format(i + 1, epoch + 1, loss.item()))
+
+                if (i+1) % 100 == 0:
+                    #print("\titers: {0}, epoch: {1} | loss: {2:.7f}".format(i + 1, epoch + 1, loss.item()))
                     speed = (time.time() - time_now) / iter_count
                     left_time = speed * ((self.args.train_epochs - epoch) * train_steps - i)
-                    print('\tspeed: {:.4f}s/iter; left time: {:.4f}s'.format(speed, left_time))
+                    #print('\tspeed: {:.4f}s/iter; left time: {:.4f}s'.format(speed, left_time))
                     iter_count = 0
                     time_now = time.time()
+                    
+                print(f"Running epoch {epoch+1} - batch n° {i+1}/{train_steps} - estimated remaining time (in secs): {np.round(left_time,1)}           ", end = '\r')
 
                 if self.args.use_amp:
                     scaler.scale(loss).backward()
@@ -157,16 +162,24 @@ class Exp_Long_Term_Forecast(Exp_Basic):
                 # ADDED : scheduler        
                 scheduler.step()
 
-            print("Epoch: {} cost time: {:.4f}".format(epoch + 1, time.time() - epoch_time))
             train_loss = np.average(train_loss)
             vali_loss = self.vali(vali_data, vali_loader, criterion)
             test_loss = self.vali(test_data, test_loader, criterion)
+            es_message = early_stopping(vali_loss, self.model, path, args = self.args, epoch=epoch)
+            print("Epoch: {0} | duration: {1:.1f} | train loss: {2:.2e} - val loss: {3:.2e} - test loss: {4:.2e} | {5} | next Learning Rate: {6:.2e}".format(epoch + 1, 
+                                                                                                                                            time.time() - epoch_time,
+                                                                                                                                            train_loss,
+                                                                                                                                            vali_loss,
+                                                                                                                                            test_loss,
+                                                                                                                                            es_message,
+                                                                                                                                            model_optim.param_groups[0]['lr']
+                                                                                                                                            ),
+                  end = '\n')
 
             #print("Epoch: {0}, Steps: {1} | Train Loss: {2:.7f} Vali Loss: {3:.7f} Test Loss: {4:.7f}".format(
             #    epoch + 1, train_steps, train_loss, vali_loss, test_loss))
-            print("Epoch: {0}, Future Learning Rate : {1:.4e},Steps: {2} | Train Loss: {3:.4e} Vali Loss: {4:.4e} Test Loss: {5:.4e}".format(
-                epoch + 1, model_optim.param_groups[0]['lr'],train_steps, train_loss, vali_loss, test_loss))
-            early_stopping(vali_loss, self.model, path, args = self.args, epoch=epoch)
+            #print("Epoch: {0}, Future Learning Rate : {1:.4e},Steps: {2} | Train Loss: {3:.4e} Vali Loss: {4:.4e} Test Loss: {5:.4e}".format(
+            #    epoch + 1, model_optim.param_groups[0]['lr'],train_steps, train_loss, vali_loss, test_loss))
             if early_stopping.early_stop:
                 print("Early stopping")
                 break
