@@ -16,7 +16,7 @@ e_layers=2
 d_model=256
 n_heads=16
 d_layers=1
-d_ff=1024 
+d_ff=512 
 factor=3
 des='Exp'
 batch_size=32
@@ -26,7 +26,7 @@ learning_rate=0.001
 optimizer=adamw
 wd=0.05
 train_epochs=36
-patience=4
+patience=36
 
 # Transformer
 python -u run.py \

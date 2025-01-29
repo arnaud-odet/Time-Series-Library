@@ -86,6 +86,7 @@ class Exp_Long_Term_Forecast(Exp_Basic):
             os.makedirs(path)
 
         time_now = time.time()
+        time_start = time.time()
 
         train_steps = len(train_loader)
         early_stopping = EarlyStopping(patience=self.args.patience, verbose=True)
@@ -165,7 +166,7 @@ class Exp_Long_Term_Forecast(Exp_Basic):
             #    epoch + 1, train_steps, train_loss, vali_loss, test_loss))
             print("Epoch: {0}, Future Learning Rate : {1:.4e},Steps: {2} | Train Loss: {3:.4e} Vali Loss: {4:.4e} Test Loss: {5:.4e}".format(
                 epoch + 1, model_optim.param_groups[0]['lr'],train_steps, train_loss, vali_loss, test_loss))
-            early_stopping(vali_loss, self.model, path)
+            early_stopping(vali_loss, self.model, path, args = self.args, epoch=epoch)
             if early_stopping.early_stop:
                 print("Early stopping")
                 break
@@ -175,6 +176,7 @@ class Exp_Long_Term_Forecast(Exp_Basic):
 
         best_model_path = path + '/' + 'checkpoint.pth'
         self.model.load_state_dict(torch.load(best_model_path))
+        self.args.fit_time = np.round(time.time() - time_start,2) 
 
         return self.model
 
@@ -266,7 +268,7 @@ class Exp_Long_Term_Forecast(Exp_Basic):
             
 
         mae, mse, rmse, mape, mspe, fde = metric(preds, trues)
-        print('mse:{:.4e}, mae:{:.4e}, dtw:{:.4e}'.format(mse, mae, dtw))
+        print('mse:{:.4e}, mae:{:.4e}, dtw:{}'.format(mse, mae, dtw))
         f = open("result_long_term_forecast.txt", 'a')
         f.write(setting + "  \n")
         f.write('mse:{}, mae:{}, dtw:{}'.format(mse, mae, dtw))

@@ -123,8 +123,13 @@ class Model(nn.Module):
         # B x S x E, B x 1 x E -> B x S
         delta = self.delta_learner(x_raw, mean_enc)
 
-        x_dec_new = torch.cat([x_enc[:, -self.label_len:, :], torch.zeros_like(x_dec[:, -self.pred_len:, :])],
+        #x_dec_new = torch.cat([x_enc[:, -self.label_len:, :], torch.zeros_like(x_dec[:, -self.pred_len:, :])],
+        #                      dim=1).to(x_enc.device).clone()
+        # MS correction
+        x_dec_new = torch.cat([x_dec[:, -self.label_len:, :], torch.zeros_like(x_dec[:, -self.pred_len:, :])],
                               dim=1).to(x_enc.device).clone()
+
+
 
         enc_out = self.enc_embedding(x_enc, x_mark_enc)
         enc_out, attns = self.encoder(enc_out, attn_mask=None, tau=tau, delta=delta)

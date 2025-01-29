@@ -329,7 +329,6 @@ class Model(nn.Module):
     def forecast(self, x_enc, x_mark_enc, x_dec, x_mark_dec):
 
         x_enc, x_mark_enc = self.__multi_scale_process_inputs(x_enc, x_mark_enc)
-
         x_list = []
         x_mark_list = []
         if x_mark_enc is not None:
