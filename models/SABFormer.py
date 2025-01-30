@@ -148,6 +148,9 @@ class Model(nn.Module):
         
         # x shape: (batch_size, input_len, n_features)
         batch_size = x_enc.shape[0]
+        if x_enc.shape[2] % 2 != 0:
+            # Deleting the first coordinate if the dimension is not par, as the action progress is on the first coordinate
+            x_enc = x_enc[:,:,1:]  
         x_enc = x_enc.reshape(x_enc.shape[0], x_enc.shape[1], int(x_enc.shape[2] / 2), 2)
 
         # Step 1: Encoder

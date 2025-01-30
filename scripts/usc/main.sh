@@ -2,8 +2,8 @@
 
 # List of scripts to run
 scripts=(
-    "./scripts/usc/USC_S.sh"
     "./scripts/usc/USC_MS.sh"
+    "./scripts/usc/USC_S.sh"
 )
 
 # Loop through and execute each script

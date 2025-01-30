@@ -13,20 +13,20 @@ dec_in=1
 c_out=1
 data=USC
 e_layers=2
-d_model=256
+d_model=512
 n_heads=16
 d_layers=1
-d_ff=512 
+d_ff=1024 
 factor=3
 des='Exp'
 batch_size=32
 itr=1
-dropout=0.1
-learning_rate=0.005
+dropout=0.5
+learning_rate=0.002
 optimizer=adamw
-wd=0.02
+wd=0.05
 train_epochs=36
-patience=36
+patience=16
 
 # LSTM
 python -u run.py \
