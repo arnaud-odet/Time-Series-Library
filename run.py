@@ -88,6 +88,7 @@ if __name__ == '__main__':
     parser.add_argument('--skip_co', type=bool, default=True, help='use skip connections')
     parser.add_argument('--d_lstm', type=int, default=128, help='dimension of LSTM encoder layers')
     parser.add_argument('--lstm_layers', type=int, default=2, help='num of LSTM encoder layers')    
+    parser.add_argument('--n_agents', type=int, default=15, help='number of agents')    
     parser.add_argument('--d_fc', type=int, default=128, help='dimention of Fully Connected decoder layer')    
     parser.add_argument('--optimizer', type=str, default='adam', help='Optimizer')    
     parser.add_argument('--wd', type=float, default=0, help='Weight decay')  

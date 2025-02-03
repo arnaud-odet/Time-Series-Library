@@ -166,7 +166,7 @@ class Exp_Long_Term_Forecast(Exp_Basic):
             vali_loss = self.vali(vali_data, vali_loader, criterion)
             test_loss = self.vali(test_data, test_loader, criterion)
             es_message = early_stopping(vali_loss, self.model, path, args = self.args, epoch=epoch)
-            print("Epoch: {0} | duration: {1:.1f} | train loss: {2:.2e} - val loss: {3:.2e} - test loss: {4:.2e} | {5} | next Learning Rate: {6:.2e}".format(epoch + 1, 
+            print("Epoch: {0} | duration: {1:.1f} secs | train loss: {2:.2e} - val loss: {3:.2e} - test loss: {4:.2e} | {5} | next Learning Rate: {6:.2e}".format(epoch + 1, 
                                                                                                                                             time.time() - epoch_time,
                                                                                                                                             train_loss,
                                                                                                                                             vali_loss,

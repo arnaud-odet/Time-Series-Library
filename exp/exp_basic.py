@@ -2,7 +2,8 @@ import os
 import torch
 from models import Autoformer, LSTransformer, SABFormer, Transformer, TimesNet, Nonstationary_Transformer, DLinear, FEDformer, \
     Informer, LightTS, Reformer, ETSformer, Pyraformer, PatchTST, MICN, Crossformer, FiLM, iTransformer, \
-    Koopa, TiDE, FreTS, TimeMixer, TSMixer, SegRNN, MambaSimple, TemporalFusionTransformer, SCINet, PAttn, TimeXer, LSTM
+    Koopa, TiDE, FreTS, TimeMixer, TSMixer, SegRNN, MambaSimple, TemporalFusionTransformer, SCINet, PAttn, TimeXer, LSTM, \
+    ST_GAT, ST_GCN
 from adapt import ADAPT 
 
 class Exp_Basic(object):
@@ -39,6 +40,8 @@ class Exp_Basic(object):
             'LSTransformer' : LSTransformer,
             'SABFormer' : SABFormer,
             'ADAPT' : ADAPT,
+            'ST_GAT': ST_GAT,
+            'ST_GCN': ST_GCN,            
             'LSTM' : LSTM
         }
         if args.model == 'Mamba':

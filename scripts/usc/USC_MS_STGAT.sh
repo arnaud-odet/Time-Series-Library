@@ -5,32 +5,33 @@ data_path=na
 model_id=USC_32_32
 seq_len=32
 pred_len=32
-label_len=16
+label_len=8
 features=MS
 input_features=A
 enc_in=61
 dec_in=1
 c_out=1
 data=USC
-e_layers=2
-d_model=128
-n_heads=16
+e_layers=1
+lstm_layers=1
+d_model=64
+n_heads=4
 d_layers=1
-d_ff=256 
+d_ff=128
 factor=3
 des='Exp'
-batch_size=32
+batch_size=64
 itr=1
 dropout=0.25
 learning_rate=0.001
 optimizer=adamw
 wd=0.05
 train_epochs=36
-patience=12
+patience=3
 
 # Transformer
 python -u run.py \
-  --model SABFormer \
+  --model ST_GAT \
   --task_name $task_name \
   --is_training $is_training \
   --root_path $root_path \
@@ -41,8 +42,10 @@ python -u run.py \
   --pred_len $pred_len \
   --features $features \
   --data $data \
+  --n_agents 15 \
   --input_features $input_features \
   --e_layers $e_layers \
+  --lstm_layers $lstm_layers \
   --d_model $d_model \
   --d_layers $d_layers \
   --factor $factor \
