@@ -88,7 +88,7 @@ class Exp_Long_Term_Forecast(Exp_Basic):
         time_now = time.time()
         time_start = time.time()
 
-        left_time = 1000
+        left_time_str = 'not_calculated'
         
         train_steps = len(train_loader)
         early_stopping = EarlyStopping(patience=self.args.patience, verbose=False)
@@ -142,15 +142,15 @@ class Exp_Long_Term_Forecast(Exp_Basic):
                     train_loss.append(loss.item())
 
 
-                if (i+1) % 100 == 0:
+                if (i+1) % (train_steps//10) == 0:
                     #print("\titers: {0}, epoch: {1} | loss: {2:.7f}".format(i + 1, epoch + 1, loss.item()))
                     speed = (time.time() - time_now) / iter_count
                     left_time = speed * ((self.args.train_epochs - epoch) * train_steps - i)
                     #print('\tspeed: {:.4f}s/iter; left time: {:.4f}s'.format(speed, left_time))
                     iter_count = 0
                     time_now = time.time()
-                    
-                print(f"Running epoch {epoch+1} - batch n° {i+1}/{train_steps} - estimated remaining time (in secs): {np.round(left_time,1)}           ", end = '\r')
+                    left_time_str = f"{int(left_time//60)} min {int(left_time%60)} secs" if left_time > 60 else f"{left_time:.1f} secs"
+                print(f"Running epoch {epoch+1} - batch n° {i+1}/{train_steps} - estimated remaining time : {left_time_str}           ", end = '\r')
 
                 if self.args.use_amp:
                     scaler.scale(loss).backward()
@@ -166,8 +166,10 @@ class Exp_Long_Term_Forecast(Exp_Basic):
             vali_loss = self.vali(vali_data, vali_loader, criterion)
             test_loss = self.vali(test_data, test_loader, criterion)
             es_message = early_stopping(vali_loss, self.model, path, args = self.args, epoch=epoch)
-            print("Epoch: {0} | duration: {1:.1f} secs | train loss: {2:.2e} - val loss: {3:.2e} - test loss: {4:.2e} | {5} | next Learning Rate: {6:.2e}".format(epoch + 1, 
-                                                                                                                                            time.time() - epoch_time,
+            epoch_time = time.time() - epoch_time
+            duration_str = f"{int(epoch_time//60)} min {int(epoch_time%60)} secs" if epoch_time > 60 else f"{epoch_time:.1f} secs"
+            print("Epoch: {0} | duration: {1} | train loss: {2:.2e} - val loss: {3:.2e} - test loss: {4:.2e} | {5} | next Learning Rate: {6:.2e}".format(epoch + 1, 
+                                                                                                                                            duration_str,
                                                                                                                                             train_loss,
                                                                                                                                             vali_loss,
                                                                                                                                             test_loss,

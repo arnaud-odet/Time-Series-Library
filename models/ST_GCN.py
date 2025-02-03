@@ -78,6 +78,7 @@ class Model(torch.nn.Module):
         Returns:
             y_out (torch.Tensor): Output predictions
         """
+        x = x[:,:,1:] 
         batch_size, seq_len, total_features = x.shape
         # Reshape to separate agents: [B, L, A, D]
         x_reshaped = x.view(batch_size, seq_len, self.num_agents, self.input_dim)
@@ -95,22 +96,29 @@ class Model(torch.nn.Module):
                 edge_index, edge_weight = self.compute_adjacency(current_x)
                 
                 # Apply TGCN
-                h = self.recurrent(current_x, edge_index, edge_weight)
+                h = self.recurrent(current_x, edge_index, edge_weight)  # [A, hidden_dim]
                 h = F.relu(h)
-                h = (h.t()).unsqueeze(1)
-                h = torch.flatten(h)
                 batch_out.append(h)
             
-            # Stack timesteps
+            # Stack timesteps [L, A, hidden_dim]
             batch_out = torch.stack(batch_out)
             out.append(batch_out)
         
-        # Stack batches
+        # Stack batches [B, L, A, hidden_dim]
         out = torch.stack(out)
+        #print(f"Shape after stacking: {out.shape}")  # Should be [B, L, A, hidden_dim]
         
-        # Further processing
-        out_s = torch.squeeze(out.transpose(0, 1)).unsqueeze(1)
-        y_out = self.avg_pool2(out_s)
-        y_out = self.decoder(y_out.squeeze())
+        # Average over agents dimension
+        out = torch.mean(out, dim=2)  # [B, L, hidden_dim]
+        #print(f"Shape after agent averaging: {out.shape}")
         
+        # Average over sequence length
+        out = torch.mean(out, dim=1)  # [B, hidden_dim]
+        #print(f"Shape after sequence averaging: {out.shape}")
+        
+        # Apply decoder
+        y_out = self.decoder(out)  # [B, pred_length * output_dim]
+        #print(f"Shape after decoder: {y_out.shape}")
+        
+        # Reshape to final output format
         return y_out.view(batch_size, self.pred_length, self.output_dim)

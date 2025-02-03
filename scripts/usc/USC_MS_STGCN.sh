@@ -17,21 +17,21 @@ lstm_layers=1
 d_model=64
 n_heads=4
 d_layers=1
-d_ff=128
+d_ff=256
 factor=3
 des='Exp'
-batch_size=32
+batch_size=64
 itr=1
 dropout=0.1
-learning_rate=0.001
+learning_rate=0.002
 optimizer=adamw
 wd=0.05
 train_epochs=36
-patience=12
+patience=3
 
 # Transformer
 python -u run.py \
-  --model ST_GAT \
+  --model ST_GCN \
   --task_name $task_name \
   --is_training $is_training \
   --root_path $root_path \
