@@ -19,7 +19,12 @@ class Model(torch.nn.Module):
         self.rec_layers = config.lstm_layers        
         self.d_ff = config.d_ff
         
-        self.recurrent = TGCN(self.input_dim, self.hidden_dim)
+        self.TGCN = nn.ModuleList([
+            TGCN(in_channels = self.input_dim if i == 0 else self.hidden_dim, 
+                 out_channels = self.hidden_dim
+                 )for i in range(config.e_layers)    
+        ])
+        
         self.avg_pool1 = torch.nn.AvgPool1d(self.num_agents, stride=1)
         self.avg_pool2 = torch.nn.AvgPool1d(self.seq_len, stride=1)
         self.dropout = torch.nn.Dropout()
@@ -73,12 +78,13 @@ class Model(torch.nn.Module):
         Forward pass of the model.
         
         Args:
-            x (torch.Tensor): Input tensor of shape [B, L, A*D]
+            x (torch.Tensor): Input tensor of shape [B, L, ? + A*D]
             
         Returns:
             y_out (torch.Tensor): Output predictions
         """
-        x = x[:,:,1:] 
+        # Delete the first coordinates in the last axis if there are more (indicating shared value in the first coordinates) 
+        x = x[:,:,-self.num_agents * -self.input_dim::] 
         batch_size, seq_len, total_features = x.shape
         # Reshape to separate agents: [B, L, A, D]
         x_reshaped = x.view(batch_size, seq_len, self.num_agents, self.input_dim)
@@ -95,9 +101,13 @@ class Model(torch.nn.Module):
                 # Compute adjacency for current timestep
                 edge_index, edge_weight = self.compute_adjacency(current_x)
                 
-                # Apply TGCN
-                h = self.recurrent(current_x, edge_index, edge_weight)  # [A, hidden_dim]
-                h = F.relu(h)
+                # Apply TGCN layers sequentially
+                h = current_x  # [A, D] for first layer, [A, hidden_dim] for subsequent layers
+                for i, tgcn_layer in enumerate(self.TGCN):
+                    h = tgcn_layer(h, edge_index, edge_weight)  # [A, hidden_dim]
+                    h = F.relu(h)
+                    if i < len(self.TGCN) - 1:  # Apply dropout between layers except last
+                        h = self.dropout(h)
                 batch_out.append(h)
             
             # Stack timesteps [L, A, hidden_dim]

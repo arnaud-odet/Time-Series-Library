@@ -12,22 +12,22 @@ enc_in=61
 dec_in=1
 c_out=1
 data=USC
-e_layers=1
+e_layers=2
 lstm_layers=1
-d_model=64
-n_heads=4
+d_model=256
+n_heads=8
 d_layers=1
-d_ff=256
+d_ff=512
 factor=3
 des='Exp'
-batch_size=64
+batch_size=32
 itr=1
 dropout=0.1
-learning_rate=0.002
+learning_rate=0.001
 optimizer=adamw
 wd=0.05
 train_epochs=36
-patience=3
+patience=12
 
 # Transformer
 python -u run.py \

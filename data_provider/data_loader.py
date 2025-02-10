@@ -760,6 +760,7 @@ class USC_dataset(Dataset):
                 timeenc=0, 
                 freq='t', 
                 seasonal_patterns=None):
+        
         self.args = args
         self.features = args.features
         self.root_path = args.root_path
@@ -772,6 +773,8 @@ class USC_dataset(Dataset):
         
         self.scale = scale
         
+        # Dowsample factor for Graph NN 
+        self.downsample_factor = 4 if args.model[:4] == 'ST_G' else 1
         
         # init
         assert flag in ['train', 'test', 'val']
@@ -795,6 +798,11 @@ class USC_dataset(Dataset):
             self.use_offense = False
         if self.features == 'MS' :
             self.use_action_progress = True
+            
+        # Downsampling if necessary    
+        downsample_mask = [i % self.downsample_factor == 0 for i in range(self.data_x.shape[0])]
+        self.data_x = self.data_x[downsample_mask]
+        self.data_y = self.data_y[downsample_mask]
 
         # TDO : makes this parametrizable
         train_share, val_share, test_share = 0.7, 0.15, 0.15 

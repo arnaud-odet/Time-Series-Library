@@ -12,6 +12,7 @@ import numpy as np
 from utils.dtw_metric import dtw,accelerated_dtw
 from utils.augmentation import run_augmentation,run_augmentation_single
 from utils.log import log
+import math
 
 warnings.filterwarnings('ignore')
 
@@ -164,15 +165,15 @@ class Exp_Long_Term_Forecast(Exp_Basic):
 
             train_loss = np.average(train_loss)
             vali_loss = self.vali(vali_data, vali_loader, criterion)
-            test_loss = self.vali(test_data, test_loader, criterion)
+            #test_loss = self.vali(test_data, test_loader, criterion)
             es_message = early_stopping(vali_loss, self.model, path, args = self.args, epoch=epoch)
             epoch_time = time.time() - epoch_time
             duration_str = f"{int(epoch_time//60)} min {int(epoch_time%60)} secs" if epoch_time > 60 else f"{epoch_time:.1f} secs"
-            print("Epoch: {0} | duration: {1} | train loss: {2:.2e} - val loss: {3:.2e} - test loss: {4:.2e} | {5} | next Learning Rate: {6:.2e}".format(epoch + 1, 
+            print("Epoch: {0} | duration: {1} | train loss: {2:.2e} - val loss: {3:.2e} | {4} | next Learning Rate: {5:.2e}".format(epoch + 1, 
                                                                                                                                             duration_str,
                                                                                                                                             train_loss,
                                                                                                                                             vali_loss,
-                                                                                                                                            test_loss,
+                                                                                                                                            #test_loss,
                                                                                                                                             es_message,
                                                                                                                                             model_optim.param_groups[0]['lr']
                                                                                                                                             ),
@@ -184,6 +185,9 @@ class Exp_Long_Term_Forecast(Exp_Basic):
             #    epoch + 1, model_optim.param_groups[0]['lr'],train_steps, train_loss, vali_loss, test_loss))
             if early_stopping.early_stop:
                 print("Early stopping")
+                break
+            if  math.isnan(vali_loss):
+                print("Model diverges, validation loss is nan")
                 break
 
             # ADDED : scheduler
