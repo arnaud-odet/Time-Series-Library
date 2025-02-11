@@ -5,8 +5,8 @@ MAIN_ARGS=("$@")
 
 # Add level-2 specific arguments
 LOCAL_ARGS=(
-  "--features" "S"
-  "--enc_in" 1
+  "--features" "MS"
+  "--enc_in" 61
   "--dec_in" 1
   "--c_out" 1
 
@@ -20,7 +20,17 @@ ALL_ARGS=(
 
 # List of scripts to run
 scripts=(
-    "./scripts/calmip/USC_S_LSTM.sh"
+    "./scripts/calmip/USC_MS_LSTM.sh"
+    "./scripts/calmip/USC_MS_Transformer.sh"
+    "./scripts/calmip/USC_MS_DLinear.sh"
+    "./scripts/calmip/USC_MS_PatchTST.sh"
+    "./scripts/calmip/USC_MS_iTransformer.sh"
+    "./scripts/calmip/USC_MS_Nonstationary_Transformer.sh"
+    "./scripts/calmip/USC_MS_TimeMixer.sh"
+    "./scripts/calmip/USC_MS_TimesNet.sh"
+    "./scripts/calmip/USC_MS_STGAT.sh"
+    "./scripts/calmip/USC_MS_SABFormer.sh"
+
 ) 
 
 # Loop through and execute each script
