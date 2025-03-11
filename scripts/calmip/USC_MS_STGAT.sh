@@ -4,7 +4,7 @@
 RECEIVED_ARGS=("$@")
 
 LOCAL_ARGS=(
-  "--model" "STGAT"
+  "--model" "ST_GAT"
   "--dropout" 0.1
   "--learning_rate" 0.001
   "--optimizer" "adamw"

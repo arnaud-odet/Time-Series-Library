@@ -97,7 +97,8 @@ if __name__ == '__main__':
     parser.add_argument('--use_action_progress', action ="store_true", default=False, help='Use or not the action progress in inputs')  
     parser.add_argument('--use_offense', action ="store_true", default=False, help='Use or not the offense boolean in inputs')  
     parser.add_argument('--consider_only_offense', action ="store_true", default=False, 
-                        help='Consider only offensive plays')  
+                        help='Consider only offensive plays') 
+     
 
  
 
