@@ -1,8 +1,12 @@
 import numpy as np
 import pandas as pd
 import os
+from tabular.feature_engineering import compute_centroid, compute_polarization, compute_dispersion
 
 DATA_PATH = './dataset/USC'
+
+
+         
 
 def load_data(seq_len:int, 
               pred_len:int, 
@@ -27,5 +31,11 @@ def load_data(seq_len:int,
     # 3 to 63 : x, y, vx, vy for player 1 to 15
     
     y = y[:,-1,1] # Last timestamp for coordinate 1 (target)
+    
+    x_centroid, _ = compute_centroid(X)
+    disp = compute_dispersion(X)
+    pol = compute_polarization(X)
+    
+    
 
     return X, y
