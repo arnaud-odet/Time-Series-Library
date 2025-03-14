@@ -65,6 +65,14 @@ def load_data(seq_len:int,
     scaler.transform(disp)
     x_centroid = x_centroid / 100 # Centroid range in the field lenght, being 100
     
+    # Computing evolutions for time windows 1, 2, ...,  downsample_factor
+    if downsample_factor > 1 :
+        for i in range(1,downsample_factor):
+            x_centroid[:,i] = x_centroid[:,i] -  x_centroid[:,:i].sum(axis = 1)
+            disp[:,i] = disp[:,i] -  disp[:,:i].sum(axis = 1)
+            pol[:,i] = pol[:,i] -  pol[:,:i].sum(axis = 1)
+        
+    
     # Concatenating and spliting the data
     data = np.concatenate((x_centroid, disp, pol), axis = 1)
     X_train = data[:train_ind]
