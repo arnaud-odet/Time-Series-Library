@@ -14,13 +14,28 @@ def downsample_data(X, downsample_factor:int, verbose :bool = True):
 
     return X_ds.reshape(X.shape[0], downsample_factor, stride).mean(axis = 2)
 
+
+def split_data(X, group):
+    
+    assert X.ndim == 3, "Please provide a X of shape (n,t,63)"
+    assert X.shape[2] == 63, "Please provide a X of shape (n,t,63)"
+    
+    x_coord_mask = [False]*3 + [i%4 == 0 and i//4 -1 in group for i in range(X.shape[2]-3)]
+    y_coord_mask = [False]*3 + [(i-1)%4 == 0 and (i-1)//4 -1 in group for i in range(X.shape[2]-3)]
+    vx_coord_mask = [False]*3 + [(i-2)%4 == 0 and (i-2)//4 -1 in group for i in range(X.shape[2]-3)]
+    vy_coord_mask = [False]*3 + [(i-3)%4 == 0 and (i-3)//4 -1 in group for i in range(X.shape[2]-3)]
+    
+    return X[:,:,x_coord_mask], X[:,:,y_coord_mask], X[:,:,vx_coord_mask], X[:,:,vy_coord_mask]
+
 def load_data(seq_len:int, 
               pred_len:int, 
               off_mask:bool = False,
               downsample_factor:int =4,
+              groups:list=None,
               train_split:float=0.7,
               val_split:float=0.15,
-              test_split:float=0.15):
+              test_split:float=0.15,
+              verbose : bool = True):
     
     assert train_split + val_split + test_split == 1 , 'Please specify split summing to 1'
     
@@ -45,41 +60,52 @@ def load_data(seq_len:int,
     
     # Computing metrics and downsampling
     stride = X.shape[1] // downsample_factor
-    if X.shape[1] % downsample_factor != 0 :
-        print(f"Warning : the sequence length is not a multiple of the downsample factor, using the last {int(stride * downsample_factor)} timesteps")    
-    x_centroid, _ = compute_centroid(X)
-    x_centroid = downsample_data(x_centroid,downsample_factor,verbose = False)
-    disp = compute_dispersion(X)
-    disp = downsample_data(disp,downsample_factor,verbose = False)
-    pol = compute_polarization(X)    
-    pol = downsample_data(pol,downsample_factor,verbose = False)
+    if X.shape[1] % downsample_factor != 0 and verbose:
+        print(f"Warning : the sequence length is not a multiple of the downsample factor, using the last {int(stride * downsample_factor)} timesteps") 
+    
+    if groups is None :
+        groups = [list(range(15))]
+
+    data = {}
+    for k,group in enumerate(groups) :
+        gx,gy,gvx,gvy = split_data(X,group)
+        gx_centroid = compute_centroid(gx)
+        gx_centroid = downsample_data(gx_centroid,downsample_factor,verbose = False)
+        gdisp = compute_dispersion(gx,gy)
+        gdisp = downsample_data(gdisp,downsample_factor,verbose = False)
+        gpol = compute_polarization(gvx,gvy)    
+        gpol = downsample_data(gpol,downsample_factor,verbose = False)
+        data[k] = {'players':group, 'x_centroid':gx_centroid, 'dispersion':gdisp, 'polarization':gpol }
     
     # Finding the split indices
     n = X.shape[0]
     train_ind = int(n*train_split) 
     val_ind = int((train_split+val_split)*n)
     
-    # Scaling the features (polarization needs no scaling as it ranges between 0 and 1 by design)
-    scaler = StandardScaler()
-    scaler.fit(disp[:train_ind])
-    scaler.transform(disp)
-    x_centroid = x_centroid / 100 # Centroid range in the field lenght, being 100
-    
-    # Computing evolutions for time windows 1, 2, ...,  downsample_factor
-    if downsample_factor > 1 :
-        for i in range(1,downsample_factor):
-            x_centroid[:,i] = x_centroid[:,i] -  x_centroid[:,:i].sum(axis = 1)
-            disp[:,i] = disp[:,i] -  disp[:,:i].sum(axis = 1)
-            pol[:,i] = pol[:,i] -  pol[:,:i].sum(axis = 1)
-        
+    for k, group in data.items():
+        # Scaling the features (polarization needs no scaling as it ranges between 0 and 1 by design)
+        scaler = StandardScaler()
+        scaler.fit(group['dispersion'][:train_ind])
+        scaler.transform(group['dispersion'])
+        group['x_centroid'] = group['x_centroid'] / 100 # Centroid range in the field lenght, being 100    
+        # Computing evolutions for time windows 1, 2, ...,  downsample_factor
+        if downsample_factor > 1 :
+            for i in range(1,downsample_factor):
+                group['x_centroid'][:,i] = group['x_centroid'][:,i] -  group['x_centroid'][:,:i].sum(axis = 1)
+                group['dispersion'][:,i] = group['dispersion'][:,i] -  group['dispersion'][:,:i].sum(axis = 1)
+                group['polarization'][:,i] = group['polarization'][:,i] -  group['polarization'][:,:i].sum(axis = 1)
+        group['concatenated_data'] = np.concatenate((group['x_centroid'], group['dispersion'], group['polarization']), axis = 1)
     
     # Concatenating and spliting the data
-    data = np.concatenate((x_centroid, disp, pol), axis = 1)
-    X_train = data[:train_ind]
+    if len(groups) > 1 :
+        concatenated_data = np.concatenate(tuple(group['concatenated_data'] for k, group in data.items()), axis = 1)
+    else :
+        concatenated_data = data[0]['concatenated_data']
+    X_train = concatenated_data[:train_ind]
     y_train = y[:train_ind]
-    X_val = data[train_ind:val_ind]
+    X_val = concatenated_data[train_ind:val_ind]
     y_val = y[train_ind:val_ind]
-    X_test = data[val_ind:]
+    X_test = concatenated_data[val_ind:]
     y_test = y[val_ind:]
 
     return X_train, y_train, X_val, y_val, X_test, y_test
