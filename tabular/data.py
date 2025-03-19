@@ -83,17 +83,12 @@ def load_data(seq_len:int,
     val_ind = int((train_split+val_split)*n)
     
     for k, group in data.items():
-        # Scaling the features (polarization needs no scaling as it ranges between 0 and 1 by design)
-        scaler = StandardScaler()
-        scaler.fit(group['dispersion'][:train_ind])
-        scaler.transform(group['dispersion'])
-        group['x_centroid'] = group['x_centroid'] / 100 # Centroid range in the field lenght, being 100    
         # Computing evolutions for time windows 1, 2, ...,  downsample_factor
         if downsample_factor > 1 :
             for i in range(1,downsample_factor):
                 group['x_centroid'][:,i] = group['x_centroid'][:,i] -  group['x_centroid'][:,:i].sum(axis = 1)
                 group['dispersion'][:,i] = group['dispersion'][:,i] -  group['dispersion'][:,:i].sum(axis = 1)
-                group['polarization'][:,i] = group['polarization'][:,i] -  group['polarization'][:,:i].sum(axis = 1)
+                group['polarization'][:,i] = group['polarization'][:,i] -  group['polarization'][:,:i].sum(axis = 1)        
         group['concatenated_data'] = np.concatenate((group['x_centroid'], group['dispersion'], group['polarization']), axis = 1)
     
     # Concatenating and spliting the data
@@ -101,11 +96,18 @@ def load_data(seq_len:int,
         concatenated_data = np.concatenate(tuple(group['concatenated_data'] for k, group in data.items()), axis = 1)
     else :
         concatenated_data = data[0]['concatenated_data']
+
     X_train = concatenated_data[:train_ind]
     y_train = y[:train_ind]
     X_val = concatenated_data[train_ind:val_ind]
     y_val = y[train_ind:val_ind]
     X_test = concatenated_data[val_ind:]
     y_test = y[val_ind:]
+    
+    # Scaling 
+    scaler = StandardScaler()
+    X_train = scaler.fit_transform(X_train)
+    X_val = scaler.transform(X_val)
+    X_test = scaler.transform(X_test)
 
     return X_train, y_train, X_val, y_val, X_test, y_test
