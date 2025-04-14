@@ -5,8 +5,8 @@ from types import SimpleNamespace
 from data_provider.data_factory import data_provider
 
 LOG_PATH = './logs'
-start_index = 232
-basis_args_loc = 207
+START_INDEX = 232
+BASIS_ARGS_LOGS = 207
 
 def logs_summary(seq_len:int, sort_col:str = 'fde'):
     pred_len = seq_len
@@ -21,10 +21,10 @@ def logs_summary(seq_len:int, sort_col:str = 'fde'):
     lt_logs_df = pd.read_csv(os.path.join(LOG_PATH,'long_term_forecast.csv'), index_col = 0)
     lt_logs_df['epoch'] = lt_logs_df['epoch'].fillna(-1).astype(int)
     lt_logs_df['fit_time'] = np.round(lt_logs_df['fit_time'],2)
-    loc_query = (lt_logs_df['model_id'] == model_id)&(lt_logs_df['fde'].isna() == False)&(lt_logs_df.index >= start_index)
+    loc_query = (lt_logs_df['model_id'] == model_id)&(lt_logs_df['fde'].isna() == False)&(lt_logs_df.index >= START_INDEX)
 
     # Scoring baselines
-    usc_args = SimpleNamespace(**lt_logs_df.loc[basis_args_loc].to_dict())
+    usc_args = SimpleNamespace(**lt_logs_df.loc[BASIS_ARGS_LOGS].to_dict())
     usc_args.seq_len = seq_len
     usc_args.pred_len = pred_len
     usc_args.scale = False
