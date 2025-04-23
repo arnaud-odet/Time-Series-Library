@@ -207,7 +207,7 @@ class Exp_Long_Term_Forecast(Exp_Basic):
 
         preds = []
         trues = []
-        folder_path = './test_results/' + setting + '/'
+        folder_path = self.args.results_path + setting + '/'
         if not os.path.exists(folder_path):
             os.makedirs(folder_path)
 
@@ -265,10 +265,6 @@ class Exp_Long_Term_Forecast(Exp_Basic):
         trues = trues.reshape(-1, trues.shape[-2], trues.shape[-1])
         #print('test shape:', preds.shape, trues.shape)
 
-        # result save
-        folder_path = './results/' + setting + '/'
-        if not os.path.exists(folder_path):
-            os.makedirs(folder_path)
         
         # dtw calculation
         if self.args.use_dtw:
