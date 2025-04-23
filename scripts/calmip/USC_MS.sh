@@ -28,9 +28,6 @@ scripts=(
     "./scripts/calmip/USC_MS_Nonstationary_Transformer.sh"
     "./scripts/calmip/USC_MS_TimeMixer.sh"
     "./scripts/calmip/USC_MS_TimesNet.sh"
-    "./scripts/calmip/USC_MS_STGAT.sh"
-    "./scripts/calmip/USC_MS_SABFormer.sh"
-
 ) 
 
 # Loop through and execute each script

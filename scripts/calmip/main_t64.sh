@@ -4,13 +4,14 @@
 MAIN_ARGS=(
   "--task_name" "long_term_forecast"
   "--is_training" 1
-  "--root_path" "./dataset/USC/"
+  "--root_path" "/tmpdir/arnaud/dataset/USC/"
+  "--checkpoints" "/tmpdir/arnaud/checkpoints"
+  "--results_path" "/tmpdir/arnaud/results"
   "--data_path" "na"
-  "--model_id" "USC_32_32"
-  "--seq_len" 32
-  "--pred_len" 32
-  "--label_len" 8
-  "--input_features" "A"
+  "--model_id" "USC_64_64"
+  "--seq_len" 64
+  "--pred_len" 64
+  "--label_len" 16
   "--data" "USC"
   "--des" "Exp"
   "--batch_size" 32
@@ -19,6 +20,7 @@ MAIN_ARGS=(
   "--embed" "fixed"
   "--consider_only_offense"
   "--inverse"
+  "--itr" 3
 )
 
 # List of scripts to run
