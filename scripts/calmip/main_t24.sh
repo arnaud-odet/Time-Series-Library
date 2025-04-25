@@ -5,8 +5,8 @@ MAIN_ARGS=(
   "--task_name" "long_term_forecast"
   "--is_training" 1
   "--root_path" "/tmpdir/arnaud/dataset/USC/"
-  "--checkpoints" "/tmpdir/arnaud/checkpoints"
-  "--results_path" "/tmpdir/arnaud/results"
+  "--checkpoints" "/tmpdir/arnaud/checkpoints/"
+  "--results_path" "/tmpdir/arnaud/results/"
   "--data_path" "na"
   "--model_id" "USC_24_24"
   "--seq_len" 24
