@@ -74,11 +74,6 @@ class USC_dataset(Dataset):
         
          
         mask = [False, self.use_action_progress, self.use_offense] + [True] * 60
-        x_coords = [False]*3 + [i %4 == 3 for i in range(3, self.data_x.shape[2])]
-        y_coords = [False]*3 + [i %4 == 0 for i in range(3, self.data_x.shape[2])]
-        v_coords = [False]*3 + [i %4 == 1 for i in range(3, self.data_x.shape[2])]
-        phi_coords = [False]*3 + [i %4 == 2 for i in range(3, self.data_x.shape[2])]
-                              
         target_index = 1 #Action progression is in the second column on the last dimension                      
                               
         if self.features == 'M': # multivariate precicts multivariate
