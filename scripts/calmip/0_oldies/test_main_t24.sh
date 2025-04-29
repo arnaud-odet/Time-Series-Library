@@ -15,8 +15,8 @@ MAIN_ARGS=(
   "--data" "USC"
   "--des" "Exp"
   "--batch_size" 128
-  "--train_epochs" 4
-  "--patience" 2
+  "--train_epochs" 48
+  "--patience" 6
   "--embed" "fixed"
   "--consider_only_offense"
   "--inverse"

@@ -10,7 +10,7 @@ python -u run.py \
   --model_id ETTh1_96_96 \
   --model $model_name \
   --data ETTh1 \
-  --features M \
+  --features MS \
   --seq_len 96 \
   --label_len 48 \
   --pred_len 96 \
