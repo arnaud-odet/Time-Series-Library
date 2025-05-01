@@ -25,8 +25,11 @@ class USC_dataset(Dataset):
         self.args = args
         self.features = args.features
         self.root_path = args.root_path
-        self.X_filename = f'seq{args.seq_len}_pred{args.seq_len}_X.npy'
-        self.Y_filename = f'seq{args.seq_len}_pred{args.seq_len}_Y.npy'
+        self.seq_len = args.seq_len
+        self.pred_len = args.pred_len
+        self.label_len = args.label_len
+        self.X_filename = f'seq{args.seq_len}_pred{args.pred_len}_X.npy'
+        self.Y_filename = f'seq{args.seq_len}_pred{args.pred_len}_Y.npy'
         self.use_action_progress = args.use_action_progress
         self.use_offense = args.use_offense 
         self.consider_only_offense = args.consider_only_offense 
@@ -132,12 +135,15 @@ class USC_dataset(Dataset):
         seq_x = self.data_x[index]
         seq_y =  np.concatenate((seq_x[-self.args.label_len:,:], self.data_y[index]), axis = 0)
         # x_mark and y_mark must be of shape [l, 4] and [p+t, 4]
-        seq_mark = np.arange(self.args.seq_len + self.args.pred_len) / (self.args.seq_len + self.args.pred_len -1) -0.5
-        seq_x_mark = np.concatenate((np.zeros((self.args.seq_len,3)),seq_mark[:self.args.seq_len].reshape(-1,1)), axis = 1)
-        seq_y_mark = np.concatenate((np.zeros((self.args.pred_len+self.args.label_len,3)),
-                                     seq_mark[self.args.seq_len- self.args.label_len:].reshape(-1,1)), axis = 1)
+        seq_x_mark = np.zeros((self.seq_len, 4))
+        seq_y_mark = np.zeros((self.label_len + self.pred_len, 4))
+        
+        # Simple time feature (normalized position in sequence)
+        time_feature = np.arange(self.seq_len + self.pred_len) / (self.seq_len + self.pred_len - 1) - 0.5
+        seq_x_mark[:, -1] = time_feature[:self.seq_len]
+        seq_y_mark[:, -1] = time_feature[self.seq_len - self.label_len:self.seq_len + self.pred_len]
 
-        return seq_x, seq_y, seq_x_mark, seq_y_mark 
+        return seq_x, seq_y, seq_x_mark, seq_y_mark
 
     def __len__(self):
         return len(self.data_x)
