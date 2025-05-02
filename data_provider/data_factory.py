@@ -1,13 +1,15 @@
-from data_provider.data_loader import USC_dataset
-from data_provider.data_loader_backup import Dataset_ETT_hour, Dataset_ETT_minute, Dataset_Custom, Dataset_M4
+from data_provider.data_loader import USC_dataset, USC_dataset_MS, USC_dataset_OLD
+# from data_provider.data_loader_backup import Dataset_ETT_hour, Dataset_ETT_minute, Dataset_Custom, Dataset_M4
 from torch.utils.data import DataLoader
 
 data_dict = {
-    'USC' : USC_dataset,
-    'ETTh1': Dataset_ETT_hour,
-    'ETTh2': Dataset_ETT_hour,
-    'ETTm1': Dataset_ETT_minute,
-    'ETTm2': Dataset_ETT_minute,
+    # 'USC' : USC_dataset,
+    # 'USC' : USC_dataset_MS,
+    'USC' : USC_dataset_OLD,
+    # 'ETTh1': Dataset_ETT_hour,
+    # 'ETTh2': Dataset_ETT_hour,
+    # 'ETTm1': Dataset_ETT_minute,
+    # 'ETTm2': Dataset_ETT_minute,
     # 'custom': Dataset_Custom,
     # 'm4': Dataset_M4,
     # 'PSM': PSMSegLoader,

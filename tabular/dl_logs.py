@@ -10,7 +10,8 @@ LOCAL_START_INDEX = 232
 BASIS_ARGS_LOGS = 207
 CALMIP_START_INDEX = {
     2: 471,
-    3: np.inf
+    3 : 1392,
+    4: np.inf
     }
 
 # Utils

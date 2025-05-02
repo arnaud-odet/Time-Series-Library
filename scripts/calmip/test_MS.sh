@@ -24,20 +24,18 @@ LOCAL_ARGS=(
   "--pred_len" 32
   "--label_len" 16
   "--batch_size" 128
-  "--train_epochs" 48
+  "--train_epochs" 4
   "--patience" 12
   "--dropout" 0.1
   "--optimizer" "adamw"
   "--wd" 0.05
   "--features" "MS"
   "--enc_in" 61
-  "--dec_in" 61
-  "--c_out" 61
   "--e_layers" 1
-  "--d_model" 32
+  "--d_model" 64
   "--n_heads" 4
   "--d_layers" 1
-  "--d_ff" 64
+  "--d_ff" 128
   "--learning_rate" 0.001
 )
 
@@ -49,13 +47,27 @@ FINAL_ARGS=(
 
 
 python -u run.py "${FINAL_ARGS[@]}" \
+  --model Transformer \
+  --dec_in 1 \
+  --c_out 1
+
+python -u run.py "${FINAL_ARGS[@]}" \
+  --model LSTM \
+  --dec_in 1 \
+  --c_out 1
+
+python -u run.py "${FINAL_ARGS[@]}" \
   --model iTransformer \
+  --dec_in 1 \
+  --c_out 1
+
+python -u run.py "${FINAL_ARGS[@]}" \
+  --model Nonstationary_Transformer \
+  --dec_in 1 \
+  --c_out 1
+
 
 python -u run.py "${FINAL_ARGS[@]}" \
   --model PatchTST \
-
-python -u run.py "${FINAL_ARGS[@]}" \
-  --model TimesNet \
-
-python -u run.py "${FINAL_ARGS[@]}" \
-  --model DLinear \
+  --dec_in 1 \
+  --c_out 1
