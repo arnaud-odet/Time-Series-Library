@@ -11,7 +11,8 @@ BASIS_ARGS_LOGS = 207
 CALMIP_START_INDEX = {
     2: 471,
     3 : 1392,
-    4: np.inf
+    4 : 1604,
+    5: np.inf
     }
 
 # Utils
@@ -42,6 +43,19 @@ def score_baselines(args, seq_len : int, pred_len : int):
     
     return pd.DataFrame(bls)
 
+def assign_logs_to_run(df):
+    df['run'] = 0
+    for index, row in df.iterrows():
+        if index < CALMIP_START_INDEX[2]:
+            df.loc[index,'run'] = 1
+        elif index < CALMIP_START_INDEX[3]:
+            df.loc[index,'run'] = 2
+        else :
+            if row['features'] == 'MS' and row['dec_in'] == 1 :
+                df.loc[index,'run'] = 3
+            else :
+                df.loc[index,'run'] = 4
+
 
 # Logs
 
@@ -49,7 +63,8 @@ def mean_std_logs_summary(metric:str = 'fde', run : int = 2):
 
     # Calmip Logs loading and filtering
     cp_logs_df = pd.read_csv(os.path.join(LOG_PATH,'calmip_logs.csv'), index_col = 0)
-    cp_query = (cp_logs_df.index >= CALMIP_START_INDEX[run]) & (cp_logs_df.index < CALMIP_START_INDEX[run+1])
+    assign_logs_to_run(cp_logs_df)
+    cp_query = (cp_logs_df['run'] == run)
     cp_logs_df = cp_logs_df[cp_query]
     
     # Processing logs
@@ -92,7 +107,8 @@ def logs_summary(seq_len:int, sort_col:str = 'fde', run : int = 2):
     # Calmip Logs
     cp_logs_df = pd.read_csv(os.path.join(LOG_PATH,'calmip_logs.csv'), index_col = 0)
     cp_logs_df['fit_time'] = cp_logs_df['fit_time'].astype(int)
-    cp_query = (cp_logs_df['model_id'] == model_id) & (cp_logs_df.index >= CALMIP_START_INDEX[run]) & (cp_logs_df.index < CALMIP_START_INDEX[run+1])
+    assign_logs_to_run(cp_logs_df)
+    cp_query = (cp_logs_df['model_id'] == model_id) & (cp_logs_df['run'] == run) 
     usc_args = SimpleNamespace(**cp_logs_df.loc[CALMIP_START_INDEX[run]].to_dict())
 
     bls = score_baselines(usc_args, seq_len=seq_len, pred_len=pred_len)
