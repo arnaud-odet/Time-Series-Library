@@ -18,7 +18,7 @@ CALMIP_START_INDEX = {
 # Utils
 
 def create_model_identifier(row):
-    return f"{row['model']}_{row['features']}_{row['seq_len']}-{row['pred_len']}_el{row['e_layers']}_dm{row['d_model']}_nh{row['n_heads']}_dl{row['d_layers']}_ff{row['d_ff']}"
+    return f"{row['model']}_{row['features']}_{row['seq_len']}-{row['pred_len']}_el{row['e_layers']}_dm{row['d_model']}_nh{row['n_heads']}_dl{row['d_layers']}_ff{row['d_ff']}_do{row['dropout']}"
 
 def score_baselines(args, seq_len : int, pred_len : int):
     # Scoring baselines
@@ -86,7 +86,7 @@ def mean_std_logs_summary(metric:str = 'fde', run : int = 2):
     # Scoring baselines
     summary_df.loc[('Baseline - StandStill', 'S'),:] = np.nan
     summary_df.loc[('Baseline - ConstantVelocity', 'S'),:] = np.nan
-    usc_args = SimpleNamespace(**cp_logs_df.loc[CALMIP_START_INDEX[run]].to_dict())  
+    usc_args = SimpleNamespace(**cp_logs_df.iloc[0].to_dict())  
     for time_horizon in summary_df.columns.get_level_values(0).unique():
         seq_len, pred_len = time_horizon.split('-')[0],time_horizon.split('-')[1]     
         bls = score_baselines(usc_args, seq_len=seq_len, pred_len=pred_len)
