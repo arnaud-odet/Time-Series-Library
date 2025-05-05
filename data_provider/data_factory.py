@@ -3,9 +3,9 @@ from data_provider.data_loader import USC_dataset, USC_dataset_MS, USC_dataset_O
 from torch.utils.data import DataLoader
 
 data_dict = {
-    # 'USC' : USC_dataset,
+    'USC' : USC_dataset,
     # 'USC' : USC_dataset_MS,
-    'USC' : USC_dataset_OLD,
+    # 'USC' : USC_dataset_OLD,
     # 'ETTh1': Dataset_ETT_hour,
     # 'ETTh2': Dataset_ETT_hour,
     # 'ETTm1': Dataset_ETT_minute,

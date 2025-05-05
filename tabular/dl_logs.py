@@ -15,21 +15,26 @@ CALMIP_START_INDEX = {
     5: np.inf
     }
 
-# Utils
-
 class ResultReader:
     
     def __init__(self, 
                  time_horizons:list,
                  runs : list,
-                 metric : str = 'fde'):
+                 metric : str = 'fde',
+                 target_n_exp:int = 3):
         self.df = pd.read_csv(os.path.join(LOG_PATH,'calmip_logs.csv'), index_col = 0)
         self.runs = runs
         self.metric = metric
         self.ths = time_horizons
         self._assign_logs_to_run()
+        self._query_runs()
+        self._add_model_identifier()
+        self._filter_nb_exp()
+        self.df['time'] = self.df.apply(lambda row : f"{row['seq_len']}-{row['pred_len']}", axis =1)
         self.score_baselines()
         self.read_logs()
+    
+    # Logs processing
             
     def _assign_logs_to_run(self):
         self.df['run'] = 0
@@ -43,7 +48,13 @@ class ResultReader:
                     self.df.loc[index,'run'] = 3
                 else :
                     self.df.loc[index,'run'] = 4        
-    
+
+    def _query_runs(self):
+        if not 'run' in self.df.columns:
+            self._assign_logs_to_run()
+        runs_query = (self.df['run'].isin(self.runs))
+        self.df = self.df[runs_query]
+
     @staticmethod
     def create_model_identifier(row):
         return f"run{row['run']}_{row['model']}_{row['features']}_{row['seq_len']}-{row['pred_len']}_el{row['e_layers']}_dm{row['d_model']}_nh{row['n_heads']}_dl{row['d_layers']}_ff{row['d_ff']}_do{row['dropout']}"
@@ -55,6 +66,13 @@ class ResultReader:
     def _add_model_identifier(self):
         self.df['model_id'] = self.df.apply(lambda row : self.create_model_identifier(row), axis =1)
         self.df['arch'] = self.df.apply(lambda row : self.create_model_architecture(row), axis =1)
+        
+    def _filter_nb_exp(self):
+        exp_df = self.df.copy()
+        exp_df = exp_df[exp_df[self.metric].isna()==False]
+        exp_df = exp_df.groupby('model_id').count()[['model']]
+        exp_df['nb_exp_filter'] = exp_df['model'] >= 3
+        self.df = self.df.merge(exp_df['nb_exp_filter'], left_on = 'model_id', right_index = True)
         
     # Baselines
     @staticmethod
@@ -81,7 +99,7 @@ class ResultReader:
         return bls
       
     def score_baselines(self):
-        args = SimpleNamespace(**self.df.loc[0].to_dict())
+        args = SimpleNamespace(**self.df.iloc[0].to_dict())
         bls = []
         for th in self.ths :
             bls += self.score_baseline(args, th,th)
@@ -91,16 +109,10 @@ class ResultReader:
         self.bls['run'] = 'n.a.'
         self.bls['arch'] = 'n.a.'
         self.bls = self.bls.pivot(index = ['model','features'], columns = 'time', values= ['mean', 'std']).swaplevel(0,1,axis = 1).sort_index(axis = 1)
-        
+ 
     # Log processing and concatenation with baselines
     def read_logs(self):
-        run_query = (self.df['run'].isin(self.runs))
-        self.df = self.df[run_query]
-        
-        # Processing logs
-        self._add_model_identifier()
-        self.df['time'] = self.df.apply(lambda row : f"{row['seq_len']}-{row['pred_len']}", axis =1)
-        temp_df = self.df[['model_id','run','arch','model','features','time',self.metric]].groupby('model_id').agg(
+        temp_df = self.df[self.df['nb_exp_filter']][['model_id','run','arch','model','features','time',self.metric]].groupby('model_id').agg(
             model=pd.NamedAgg(column='model', aggfunc='first'),
             run=pd.NamedAgg(column='run', aggfunc='first'),
             arch=pd.NamedAgg(column='arch', aggfunc='first'),
@@ -111,7 +123,7 @@ class ResultReader:
             std=pd.NamedAgg(column= self.metric, aggfunc='std'),
         ).sort_values(by = 'mean').reset_index()
         temp_df['dupl'] = temp_df[['model','time','features']].duplicated()
-        temp_df['std'] = temp_df['std'].fillna(0)
+        # temp_df['std'] = temp_df['std'].fillna(0)
         summary_df = temp_df[temp_df['dupl'] == False].copy()
         self.results = summary_df.copy()
         summary_df = summary_df.pivot(index = ['model','features'], columns = 'time', values = ['mean','std']).swaplevel(0,1,axis = 1).sort_index(axis = 1)
@@ -119,166 +131,29 @@ class ResultReader:
         summary_df[('Average','mean')] = summary_df.xs('mean', axis = 1, level = 1).mean(axis = 1)
         self.results_df = summary_df.sort_values(by = ('Average','mean'))
            
-
-
-
-# OLD
-
-def create_model_identifier(row):
-    return f"{row['model']}_{row['features']}_{row['seq_len']}-{row['pred_len']}_el{row['e_layers']}_dm{row['d_model']}_nh{row['n_heads']}_dl{row['d_layers']}_ff{row['d_ff']}_do{row['dropout']}"
-
-def score_baselines(args, seq_len : int, pred_len : int):
-    # Scoring baselines
-    args.seq_len = seq_len
-    args.pred_len = pred_len
-    args.root_path = DATA_PATH
-    args.scale = False
-    uscds, uscdl = data_provider(args= args, flag = 'test', )
-    ### StandStill
-    ss_fde = np.sqrt(np.mean(uscds.data_y[:,-1,0]**2))
-    ss_rmse = np.sqrt(np.mean(uscds.data_y[:,:,0]**2))
-    ### Constant Velocity
-    bl_cv_delta = uscds.data_x[:,-1,0] - uscds.data_x[:,-2,0]
-    bl_cv_pred = np.repeat(uscds.data_x[:,-1,0].reshape(-1,1,1), uscds.data_y.shape[1], axis=1)
-    for i in range(uscds.data_y.shape[1]):
-        bl_cv_pred[:,i,0] = (i+1) * bl_cv_delta 
-    cv_fde = np.sqrt(np.mean( (uscds.data_y[:,-1,0] - bl_cv_pred[:,-1,0])**2 ))
-    cv_rmse = np.sqrt(np.mean( (uscds.data_y[:,:,0] - bl_cv_pred[:,:,0])**2 ))
-    ### Concat
-    bls = [{'model':'Baseline - StandStill', 'features':'S','fde':ss_fde, 'rmse':ss_rmse},
-        {'model':'Baseline - ConstantVelocity', 'features':'S','fde':cv_fde, 'rmse': cv_rmse}]
-    
-    return pd.DataFrame(bls)
-
-def assign_logs_to_run(df):
-    df['run'] = 0
-    for index, row in df.iterrows():
-        if index < CALMIP_START_INDEX[2]:
-            df.loc[index,'run'] = 1
-        elif index < CALMIP_START_INDEX[3]:
-            df.loc[index,'run'] = 2
+    def display_logs(self, runs = None):
+        if type(runs) == int:
+            runs = [runs]
+        if runs == None or runs == self.runs :
+            return self.results_df
         else :
-            if row['features'] == 'MS' and row['dec_in'] == 1 :
-                df.loc[index,'run'] = 3
-            else :
-                df.loc[index,'run'] = 4
-
-
-# Logs
-
-def mean_std_logs_summary(metric:str = 'fde', run : int = 2):
-
-    # Calmip Logs loading and filtering
-    cp_logs_df = pd.read_csv(os.path.join(LOG_PATH,'calmip_logs.csv'), index_col = 0)
-    assign_logs_to_run(cp_logs_df)
-    cp_query = (cp_logs_df['run'] == run)
-    cp_logs_df = cp_logs_df[cp_query]
-    
-    # Processing logs
-    cp_logs_df['model_id'] = cp_logs_df.apply(lambda row : create_model_identifier(row), axis =1)
-    cp_logs_df['time'] = cp_logs_df.apply(lambda row : f"{row['seq_len']}-{row['pred_len']}", axis =1)
-    temp_df = cp_logs_df[['model_id','model','features','time','rmse',metric]].groupby('model_id').agg(
-        model=pd.NamedAgg(column='model', aggfunc='first'),
-        features=pd.NamedAgg(column='features', aggfunc='first'),
-        time=pd.NamedAgg(column='time', aggfunc='first'),
-        count=pd.NamedAgg(column= metric, aggfunc='count'),
-        mean=pd.NamedAgg(column= metric, aggfunc='mean'),
-        std=pd.NamedAgg(column= metric, aggfunc='std'),
-    ).sort_values(by = 'mean')
-    temp_df['dupl'] = temp_df[['model','time','features']].duplicated()
-    temp_df['std'] = temp_df['std'].fillna(0)
-    summary_df = temp_df[temp_df['dupl'] == False].copy()
-    summary_df = summary_df.pivot(index = ['model','features'], columns = 'time', values = ['mean','std']).swaplevel(0,1,axis = 1).sort_index(axis = 1)
-    
-    # Scoring baselines
-    summary_df.loc[('Baseline - StandStill', 'S'),:] = np.nan
-    summary_df.loc[('Baseline - ConstantVelocity', 'S'),:] = np.nan
-    usc_args = SimpleNamespace(**cp_logs_df.iloc[0].to_dict())  
-    for time_horizon in summary_df.columns.get_level_values(0).unique():
-        seq_len, pred_len = time_horizon.split('-')[0],time_horizon.split('-')[1]     
-        bls = score_baselines(usc_args, seq_len=seq_len, pred_len=pred_len)
-        summary_df.loc[('Baseline - StandStill', 'S'), (time_horizon, 'mean')] = bls[bls['model'] == 'Baseline - StandStill'][metric].iloc[0]
-        summary_df.loc[('Baseline - StandStill', 'S'), (time_horizon, 'std')] = 0
-        summary_df.loc[('Baseline - ConstantVelocity', 'S'), (time_horizon, 'mean')] = bls[bls['model'] == 'Baseline - ConstantVelocity'][metric].iloc[0]
-        summary_df.loc[('Baseline - ConstantVelocity', 'S'), (time_horizon, 'std')] = 0
-           
-    summary_df[('Average','mean')] = summary_df.xs('mean', axis = 1, level = 1).mean(axis = 1)
-    summary_df.sort_values(by = ('Average','mean'),inplace=True)
-    
-    return summary_df
-    
-def logs_summary(seq_len:int, sort_col:str = 'fde', run : int = 2):
-    pred_len = seq_len
-    model_id = f'USC_{seq_len}_{pred_len}'    
-
-    # Calmip Logs
-    cp_logs_df = pd.read_csv(os.path.join(LOG_PATH,'calmip_logs.csv'), index_col = 0)
-    cp_logs_df['fit_time'] = cp_logs_df['fit_time'].astype(int)
-    assign_logs_to_run(cp_logs_df)
-    cp_query = (cp_logs_df['model_id'] == model_id) & (cp_logs_df['run'] == run) 
-    usc_args = SimpleNamespace(**cp_logs_df.loc[CALMIP_START_INDEX[run]].to_dict())
-
-    bls = score_baselines(usc_args, seq_len=seq_len, pred_len=pred_len)
-
-    columns = ['model','features','fde','rmse']
-    tmp_df = cp_logs_df[cp_query][columns].copy().reset_index(drop=True)
-    tmp_df.sort_values(by = 'fde', inplace=True)
-    tmp_df['dupl'] = tmp_df[['model','features']].duplicated()
-    tmp_df=tmp_df[tmp_df['dupl'] == False]
-
-    comp = pd.concat([tmp_df.drop(columns = 'dupl'), bls]).reset_index(drop=True)
-    return comp.sort_values(by = sort_col)
-
-def logs_summary_run_1(seq_len:int, sort_col:str = 'fde'):
-    pred_len = seq_len
-    model_id = f'USC_{seq_len}_{pred_len}'    
-
-    # Calmip Logs
-    cp_logs_df = pd.read_csv(os.path.join(LOG_PATH,'calmip_logs.csv'), index_col = 0)
-    cp_logs_df['fit_time'] = cp_logs_df['fit_time'].astype(int)
-    cp_query = (cp_logs_df['model_id'] == model_id) & (cp_logs_df.index < CALMIP_START_INDEX[2])
-
-
-    # Local logs
-    lt_logs_df = pd.read_csv(os.path.join(LOG_PATH,'long_term_forecast.csv'), index_col = 0)
-    lt_logs_df['epoch'] = lt_logs_df['epoch'].fillna(-1).astype(int)
-    lt_logs_df['fit_time'] = np.round(lt_logs_df['fit_time'],2)
-    loc_query = (lt_logs_df['model_id'] == model_id)&(lt_logs_df['fde'].isna() == False)&(lt_logs_df.index >= LOCAL_START_INDEX)
-
-    # Scoring baselines
-    usc_args = SimpleNamespace(**lt_logs_df.loc[BASIS_ARGS_LOGS].to_dict())
-    bls = score_baselines(usc_args, seq_len=seq_len, pred_len=pred_len)
-
-    columns = ['model','features','fde','rmse']
-    tmp_df = pd.concat([lt_logs_df[loc_query][columns].copy(), cp_logs_df[cp_query][columns].copy()]).reset_index(drop=True)
-    tmp_df.sort_values(by = 'fde', inplace=True)
-    tmp_df['dupl'] = tmp_df[['model','features']].duplicated()
-    tmp_df=tmp_df[tmp_df['dupl'] == False]
-
-    comp = pd.concat([tmp_df.drop(columns = 'dupl'), bls]).reset_index(drop=True)
-    return comp.sort_values(by = sort_col)
-
-def exp_summary(exp_list, sort_col:str = 'fde', run : int = 1):
-    for i, seq_len in enumerate(exp_list):
-        if run == 1 :
-            tdf = logs_summary_run_1(seq_len, sort_col=sort_col)
-        else :
-            tdf = logs_summary(seq_len, sort_col=sort_col, run=run)    
-        tdf = tdf.set_index(['model','features'])
-        cs = [[f"{seq_len}_{seq_len}"], ["fde", "rmse"]]
-        c_index = pd.MultiIndex.from_product(cs, names=["seq_len", "metrics"])
-        tdf = tdf.set_axis(c_index, axis = 1)
-        if i == 0 :
-            rdf = tdf.copy()
-        else :
-            rdf = rdf.merge(tdf, right_index = True, left_index = True, how = 'outer')
-    
-    metrics = rdf.columns.get_level_values(1).unique()
-    for metric in metrics:
-        new_col = ('Average', metric)
-        rdf[new_col] = rdf.xs(metric, axis=1, level=1).mean(axis=1)
-           
-    return rdf.reset_index().sort_values(by = ('Average',sort_col))
+            display_query = (self.df['run'].isin(runs)) & (self.df['nb_exp_filter'])
+            temp_df = self.df[display_query][['model_id','run','arch','model','features','time',self.metric]].groupby('model_id').agg(
+                model=pd.NamedAgg(column='model', aggfunc='first'),
+                run=pd.NamedAgg(column='run', aggfunc='first'),
+                arch=pd.NamedAgg(column='arch', aggfunc='first'),
+                features=pd.NamedAgg(column='features', aggfunc='first'),
+                time=pd.NamedAgg(column='time', aggfunc='first'),
+                count=pd.NamedAgg(column= self.metric, aggfunc='count'),
+                mean=pd.NamedAgg(column= self.metric, aggfunc='mean'),
+                std=pd.NamedAgg(column= self.metric, aggfunc='std'),
+            ).sort_values(by = 'mean').reset_index()
+            temp_df['dupl'] = temp_df[['model','time','features']].duplicated()
+            # temp_df['std'] = temp_df['std'].fillna(0)
+            summary_df = temp_df[temp_df['dupl'] == False].copy()
+            summary_df = summary_df.pivot(index = ['model','features'], columns = 'time', values = ['mean','std']).swaplevel(0,1,axis = 1).sort_index(axis = 1)
+            summary_df[('Average','mean')] = summary_df.xs('mean', axis = 1, level = 1).mean(axis = 1)
+            return summary_df.sort_values(by = ('Average','mean'))
 
 
 # LaTeX display
