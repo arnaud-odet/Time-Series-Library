@@ -1,6 +1,6 @@
 #!/bin/bash
 #SBATCH --job-name=array_job
-#SBATCH --array=0-71%4  
+#SBATCH --array=0-161%8  
 #SBATCH --mem=20G
 #SBATCH --ntasks-per-node=9
 #SBATCH --ntasks-per-core=1

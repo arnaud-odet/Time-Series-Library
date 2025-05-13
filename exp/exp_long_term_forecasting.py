@@ -69,7 +69,10 @@ class Exp_Long_Term_Forecast(Exp_Basic):
 
                 pred = outputs.detach().cpu()
                 true = batch_y.detach().cpu()
-                loss = criterion(pred, true)
+                if self.args.loss == 'FDE' :
+                    loss = criterion(pred[:,-1,:], true[:,-1,:])
+                else :
+                    loss = criterion(pred, true)
                 #print(f"{pred.shape=}, {true.shape=}, {loss=}")
 
                 total_loss.append(loss)
@@ -130,15 +133,21 @@ class Exp_Long_Term_Forecast(Exp_Basic):
                         f_dim = -1 if self.args.features == 'MS' else 0
                         outputs = outputs[:, -self.args.pred_len:, f_dim:]
                         batch_y = batch_y[:, -self.args.pred_len:, f_dim:].to(self.device)
-                        loss = criterion(outputs, batch_y)
+                        if self.args.loss == 'FDE' :
+                            loss = criterion(outputs[:,-1,:], batch_y[:,-1,:])
+                        else :
+                            loss = criterion(outputs, batch_y)                        
                         train_loss.append(loss.item())
                 else:
                     outputs = self.model(batch_x, batch_x_mark, dec_inp, batch_y_mark)
 
                     f_dim = -1 if self.args.features == 'MS' else 0
                     outputs = outputs[:, -self.args.pred_len:, f_dim:]
-                    batch_y = batch_y[:, -self.args.pred_len:, f_dim:].to(self.device)
-                    loss = criterion(outputs, batch_y)
+                    batch_y = batch_y[:, -self.args.pred_len:, f_dim:].to(self.device)                    
+                    if self.args.loss == 'FDE' :
+                        loss = criterion(outputs[:,-1,:], batch_y[:,-1,:])
+                    else :
+                        loss = criterion(outputs, batch_y)                        
                     train_loss.append(loss.item())
 
 
@@ -282,7 +291,7 @@ class Exp_Long_Term_Forecast(Exp_Basic):
             
 
         mae, mse, rmse, mape, mspe, fde = metric(preds, trues)
-        print('mse:{:.4e}, mae:{:.4e}, dtw:{}'.format(mse, mae, dtw))
+        print('fde:{:.4e}, rmse:{:.4e}, mse:{:.4e}, mae:{:.4e}, dtw:{}'.format(fde,rmse,mse, mae, dtw))
         f = open("result_long_term_forecast.txt", 'a')
         f.write(setting + "  \n")
         f.write('mse:{}, mae:{}, dtw:{}'.format(mse, mae, dtw))

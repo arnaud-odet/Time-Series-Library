@@ -12,7 +12,8 @@ CALMIP_START_INDEX = {
     2: 471,
     3 : 1392,
     4 : 1604,
-    5: np.inf
+    5 : 2304,
+    6 : np.inf
     }
 
 class ResultReader:
@@ -43,11 +44,13 @@ class ResultReader:
                 self.df.loc[index,'run'] = 1
             elif index < CALMIP_START_INDEX[3]:
                 self.df.loc[index,'run'] = 2
-            else :
+            elif index < CALMIP_START_INDEX[5] :
                 if row['features'] == 'MS' and row['dec_in'] == 1 :
                     self.df.loc[index,'run'] = 3
                 else :
                     self.df.loc[index,'run'] = 4        
+            else  :
+                self.df.loc[index,'run'] = 5
 
     def _query_runs(self):
         if not 'run' in self.df.columns:
