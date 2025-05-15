@@ -23,20 +23,21 @@ LOCAL_ARGS=(
   "--seq_len" 32
   "--pred_len" 32
   "--label_len" 8
-  "--batch_size" 64
+  "--batch_size" 128
   "--train_epochs" 48
-  "--patience" 16
+  "--patience" 6
   "--optimizer" "adamw"
   "--wd" 0.01
   "--features" "MS"
   "--enc_in" 61
-  "--dec_in" 61
-  "--c_out" 61
+  "--dec_in" 1
+  "--c_out" 1
   "--e_layers" 2
   "--d_model" 512
   "--n_heads" 4
   "--d_layers" 2
-  "--loss" "FDE"
+  # "--loss" "FDE"
+  # "--lr_scheduler"
 )
 
 FINAL_ARGS=(
@@ -48,9 +49,33 @@ FINAL_ARGS=(
 
 python -u run.py "${FINAL_ARGS[@]}" \
   --model Transformer \
-  --d_model 512 \
-  --d_ff 256 \
-  --learning_rate 0.00001 \
+  --d_model 256 \
+  --d_ff 128 \
+  --learning_rate 0.0001 \
+  --dropout 0.1 \
+  --wd 0.05
+
+python -u run.py "${FINAL_ARGS[@]}" \
+  --model Transformer2D \
+  --d_model 256 \
+  --d_ff 128 \
+  --learning_rate 0.0001 \
+  --dropout 0.1 \
+  --wd 0.05
+
+python -u run.py "${FINAL_ARGS[@]}" \
+  --model Transformer \
+  --d_model 64 \
+  --d_ff 64 \
+  --learning_rate 0.0001 \
+  --dropout 0.1 \
+  --wd 0.05
+
+python -u run.py "${FINAL_ARGS[@]}" \
+  --model Transformer2D \
+  --d_model 64 \
+  --d_ff 64 \
+  --learning_rate 0.0001 \
   --dropout 0.1 \
   --wd 0.05
 
@@ -58,7 +83,7 @@ python -u run.py "${FINAL_ARGS[@]}" \
   --model Transformer \
   --d_model 512 \
   --d_ff 256 \
-  --learning_rate 0.00001 \
+  --learning_rate 0.0001 \
   --dropout 0.1 \
   --wd 0.05
 
@@ -66,14 +91,6 @@ python -u run.py "${FINAL_ARGS[@]}" \
   --model Transformer2D \
   --d_model 512 \
   --d_ff 256 \
-  --learning_rate 0.00001 \
-  --dropout 0.1 \
-  --wd 0.05
-
-python -u run.py "${FINAL_ARGS[@]}" \
-  --model Transformer2D \
-  --d_model 512 \
-  --d_ff 256 \
-  --learning_rate 0.00001 \
+  --learning_rate 0.0001 \
   --dropout 0.1 \
   --wd 0.05

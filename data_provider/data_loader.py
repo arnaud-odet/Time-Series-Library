@@ -305,18 +305,22 @@ class USC_dataset_MS(Dataset):
 
     def inverse_transform(self, data):
         
-        data_size = data.shape[0] * data.shape[1] 
-        if not hasattr(self,'inverse_offset') :
-            if data_size == self.scaler['y_size'] :
-                offset = self.scaler['offset_y']
-            elif data_size == self.scaler['x_size'] :
-                offset = self.scaler['offset_x']
-            else : 
-                raise(ValueError('Please investigate scaling operation, sizes do not match with neither x nor y'))
-            self.inverse_offset = offset
+        # data_size = data.shape[0] * data.shape[1] 
+        # if not hasattr(self,'inverse_offset') :
+        #     if data_size == self.scaler['y_size'] :
+        #         offset = self.scaler['offset_y']
+        #     elif data_size == self.scaler['x_size'] :
+        #         offset = self.scaler['offset_x']
+        #     else : 
+        #         raise(ValueError('Please investigate scaling operation, sizes do not match with neither x nor y'))
+        #     self.inverse_offset = offset
             
+        # for i in range(data.shape[1]):
+        #     data[:,i] = data[:,i] * self.scaler['scale'][i+self.inverse_offset] + self.scaler['mean'][i+self.inverse_offset]
+
         for i in range(data.shape[1]):
-            data[:,i] = data[:,i] * self.scaler['scale'][i+self.inverse_offset] + self.scaler['mean'][i+self.inverse_offset]
+            data[:,i] = data[:,i] * self.scaler['scale'][-1] + self.scaler['mean'][-1]
+        
         return data   
 
 

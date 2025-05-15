@@ -99,10 +99,11 @@ class Exp_Long_Term_Forecast(Exp_Basic):
         model_optim = self._select_optimizer()
         criterion = self._select_criterion()
         # ADDED : Scheduler
-        scheduler = torch.optim.lr_scheduler.OneCycleLR(model_optim, 
-                                                        max_lr=self.args.learning_rate,
-                                                        steps_per_epoch=len(train_loader), 
-                                                        epochs=self.args.train_epochs)
+        if self.args.lr_scheduler :        
+            scheduler = torch.optim.lr_scheduler.OneCycleLR(model_optim, 
+                                                            max_lr=self.args.learning_rate,
+                                                            steps_per_epoch=len(train_loader), 
+                                                            epochs=self.args.train_epochs)
 
         if self.args.use_amp:
             scaler = torch.cuda.amp.GradScaler()
@@ -168,8 +169,9 @@ class Exp_Long_Term_Forecast(Exp_Basic):
                 else:
                     loss.backward()
                     model_optim.step()
-                # ADDED : scheduler        
-                scheduler.step()
+                # ADDED : scheduler   
+                if self.args.lr_scheduler :
+                    scheduler.step()
 
             train_loss = np.average(train_loss)
             vali_loss = self.vali(vali_data, vali_loader, criterion)
@@ -177,15 +179,6 @@ class Exp_Long_Term_Forecast(Exp_Basic):
             es_message = early_stopping(vali_loss, self.model, path, args = self.args, epoch=epoch)
             epoch_time = time.time() - epoch_time
             duration_str = f"{int(epoch_time//60)} min {int(epoch_time%60)} secs" if epoch_time > 60 else f"{epoch_time:.1f} secs"
-            print("Epoch: {0} | duration: {1} | train loss: {2:.2e} - val loss: {3:.2e} | {4} | next Learning Rate: {5:.2e}".format(epoch + 1, 
-                                                                                                                                            duration_str,
-                                                                                                                                            train_loss,
-                                                                                                                                            vali_loss,
-                                                                                                                                            #test_loss,
-                                                                                                                                            es_message,
-                                                                                                                                            model_optim.param_groups[0]['lr']
-                                                                                                                                            ),
-                  end = '\n')
 
             #print("Epoch: {0}, Steps: {1} | Train Loss: {2:.7f} Vali Loss: {3:.7f} Test Loss: {4:.7f}".format(
             #    epoch + 1, train_steps, train_loss, vali_loss, test_loss))
@@ -199,7 +192,19 @@ class Exp_Long_Term_Forecast(Exp_Basic):
                 break
 
             # ADDED : scheduler
-            #adjust_learning_rate(model_optim, epoch + 1, self.args)
+            if not self.args.lr_scheduler :
+                adjust_learning_rate(model_optim, epoch + 1, self.args)
+
+            print("Epoch: {0} | duration: {1} | train loss: {2:.2e} - val loss: {3:.2e} | {4} | next Learning Rate: {5:.2e}".format(epoch + 1, 
+                                                                                                                                            duration_str,
+                                                                                                                                            train_loss,
+                                                                                                                                            vali_loss,
+                                                                                                                                            #test_loss,
+                                                                                                                                            es_message,
+                                                                                                                                            model_optim.param_groups[0]['lr']
+                                                                                                                                            ),
+                  end = '\n')
+
 
         best_model_path = path + '/' + 'checkpoint.pth'
         self.model.load_state_dict(torch.load(best_model_path))
