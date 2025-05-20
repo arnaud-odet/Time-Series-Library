@@ -13,6 +13,8 @@ from utils.dtw_metric import dtw,accelerated_dtw
 from utils.augmentation import run_augmentation,run_augmentation_single
 from utils.log import log
 import math
+
+import copy
 from pathlib import Path
 import pandas as pd
 
@@ -87,9 +89,22 @@ class Pruning(Exp_Basic):
     
     # Model-related methods
     
-    def _build_model(self):
-        model = self.model_dict[self.args.model].Model(self.args).float()
-        return model
+    def _build_exp_model(self, exp):
+        args = copy.deepcopy(self.args)
+        
+        # Update args with experiment-specific parameters
+        for param_name, param_value in exp['hp'].items():
+            if hasattr(args, param_name):
+                setattr(args, param_name, param_value)
+            else:
+                print(f"Warning: Parameter '{param_name}' not found in args")
+        
+        model = self.model_dict[args.model].Model(args).float()
+        model_optim = self._select_optimizer()
+        scaler = None
+        if self.args.use_amp:
+            scaler = torch.cuda.amp.GradScaler()
+        return model, model_optim, scaler
 
     def _get_data(self, flag):
         data_set, data_loader = data_provider(self.args, flag)
@@ -369,19 +384,7 @@ class Pruning(Exp_Basic):
             for exp in self.exps :
                 if exp['alive']:
                     if iter == 0 :
-                        # Customize args
-                        
-                        #################
-                        ##### To do #####
-                        #################
-                        
-                        # Load model from args
-                        model = self._build_model()
-                        model_optim = self._select_optimizer()
-                        scaler = None
-                        if self.args.use_amp:
-                            scaler = torch.cuda.amp.GradScaler()
-                        
+                        model, model_optim, scaler = self._build_exp_model(exp)
                     else :
                         # Load last_model from checkpoint
                         model, model_optim, scaler = self.load_model(model_id= exp['id'], reason = 'last', load_optimizer=True, load_scaler=True)
