@@ -55,5 +55,5 @@ python -u run.py "${FINAL_ARGS[@]}" \
   --learning_rate 0.0005 \
   --dropout 0.1 \
   --wd 0.05 \
-  --pruning_factor 0.6 \
+  --pruning_factor 0.5 \
   --pruning_epochs 2

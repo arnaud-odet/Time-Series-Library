@@ -51,6 +51,7 @@ class Pruning(Exp_Basic):
         if experiments == None:
             experiments = EXPS
         self.exps = self._build_exps(experiments)
+        self.n_exp_alive = len(self.exps)
        
      # Exps-related methods   
     
@@ -77,13 +78,14 @@ class Pruning(Exp_Basic):
         curves_path = self.path / 'learning_curves'
         np.save(curves_path / f"{exp['id']}_train_loss.npy", exp['train_loss'])
         np.save(curves_path / f"{exp['id']}_val_loss.npy", exp['val_loss']) 
-        self._log_exp(exp)              
-        print(f"    -> Killing exp {exp['id']} with a validation loss of {exp['val_loss'][-1]:.2e} | {reason}")  
+        self._log_exp(exp)  
+        self.n_exp_alive = self.n_exp_alive -1            
+        print(f"    -> Killing exp {exp['id']:6} with a validation loss of {exp['val_loss'][-1]:.2e} | {reason}")  
               
     def _log_exp(self,exp):
         exp_log = {'pr_id':self.pr_id, 'lifetime': exp['train_loss'].shape[0], 'death': exp['death'], 'best_score':exp['best_score']}
         if os.path.exists(self.path/'pruning_logs.csv'):
-            ldf = pd.read_csv(self.path/'pruning_logs.csv')
+            ldf = pd.read_csv(self.path/'pruning_logs.csv', index_col = 0)
             ldf.loc[exp['id']] = exp_log
         else :
             ldf = pd.DataFrame(exp_log, index = [exp['id']])
@@ -246,13 +248,13 @@ class Pruning(Exp_Basic):
         module_name = checkpoint['model_module']
         class_name = checkpoint['model_class']
         model_args = checkpoint['model_args']
-        
+                
         # Import the module and get the class
         module = __import__(module_name, fromlist=[class_name])
         model_class = getattr(module, class_name)
         
         # Create model instance using saved arguments
-        model = model_class(**model_args)
+        model = model_class(model_args)
         model.load_state_dict(checkpoint['model_state_dict'])
         model = model.to(self.device)
         
@@ -410,53 +412,55 @@ class Pruning(Exp_Basic):
         for iter in range(n_iter):
             scores = []
             ids = []
-            for exp in self.exps :
-                if exp['alive']:
-                    if iter == 0 :
-                        model, model_optim, scaler = self._build_exp_model(exp)
-                    else :
-                        # Load last_model from checkpoint
-                        model, model_optim, scaler = self.load_model(model_id= exp['id'], reason = 'last', load_optimizer=True, load_scaler=True)
-                    for k in range(self.pruning_epochs):
-                        epoch = self.pruning_epochs * iter + k 
-                        train_loss = self._training_epoch(model, model_optim, scaler, train_loader, criterion, epoch = epoch)
-                        exp['train_loss'] = np.append(exp['train_loss'], train_loss)
-                        val_loss = self._validation_step(model, val_loader, criterion)
-                        exp['val_loss'] = np.append(exp['val_loss'], val_loss)
-                        
-                        # EarlyStopping logic
-                        self._save_model(model_id = exp['id'], model = model, optimizer = model_optim, reason = 'last')
-                        if val_loss < exp['best_score']:
-                            # Save best_model 
-                            exp['best_score'] = val_loss
-                            self._save_model(model_id = exp['id'], model = model, optimizer = model_optim, reason = 'best')                            
-                            exp['early_stopping_counter'] = 0
+            if not self.n_exp_alive == 0 :
+                
+                for exp in self.exps :
+                    if exp['alive']:
+                        if iter == 0 :
+                            model, model_optim, scaler = self._build_exp_model(exp)
                         else :
-                            exp['early_stopping_counter'] += 1
+                            # Load last_model from checkpoint
+                            model, model_optim, scaler = self.load_model(model_id= exp['id'], reason = 'last', load_optimizer=True, load_scaler=True)
+                        for k in range(self.pruning_epochs):
+                            epoch = self.pruning_epochs * iter + k 
+                            train_loss = self._training_epoch(model, model_optim, scaler, train_loader, criterion, epoch = epoch)
+                            exp['train_loss'] = np.append(exp['train_loss'], train_loss)
+                            val_loss = self._validation_step(model, val_loader, criterion)
+                            exp['val_loss'] = np.append(exp['val_loss'], val_loss)
+                            
+                            # EarlyStopping logic
+                            self._save_model(model_id = exp['id'], model = model, optimizer = model_optim, reason = 'last')
+                            if val_loss < exp['best_score']:
+                                # Save best_model 
+                                exp['best_score'] = val_loss
+                                self._save_model(model_id = exp['id'], model = model, optimizer = model_optim, reason = 'best')                            
+                                exp['early_stopping_counter'] = 0
+                            else :
+                                exp['early_stopping_counter'] += 1
+                            
+                            print("Exp id : {:6} | epoch {:3} : train loss {:.2e}, val loss {:.2e} | earlystopping counter {}/{}".format(
+                                exp['id'],
+                                epoch,
+                                train_loss,
+                                val_loss,
+                                exp['early_stopping_counter'],
+                                self.args.patience
+                            ))
                             if exp['early_stopping_counter'] >= self.args.patience :
                                 self._kill_exp(exp, reason = 'EarlyStopping')
-                        
-                        print("Exp id : {} | epoch {} : train loss {:.3e}, val loss {:.3e} | earlystopping counter {}/{}".format(
-                            exp['id'],
-                            epoch,
-                            train_loss,
-                            val_loss,
-                            exp['early_stopping_counter'],
-                            self.args.patience
-                        ))
-                                 
-                    ids.append(exp['id'])
-                    scores.append(val_loss)
-            scores_series = pd.Series(scores, index = ids)
-            scores_series = scores_series.sort_values(ascending = True)
-            n_exp_to_keep = int(scores_series.shape[0] * (1- self.pruning_factor))
-            keep_thres = scores_series.iloc[n_exp_to_keep]
-            print(f"Iter n° {iter + 1} (epochs {iter * self.pruning_epochs} to {(iter+1) * self.pruning_epochs -1}) - threshold = {keep_thres:.2e}")
-            for exp in self.exps :
-                if exp['val_loss'][-1] > keep_thres and exp['alive']:
-                    self._kill_exp(exp, reason = 'Pruning')
+                                    
+                        ids.append(exp['id'])
+                        scores.append(val_loss)
+                
+                scores_series = pd.Series(scores, index = ids)
+                scores_series = scores_series.sort_values(ascending = True)
+                n_exp_to_keep = int(scores_series.shape[0] * (1- self.pruning_factor))
+                keep_thres = scores_series.iloc[n_exp_to_keep-1]
+                print(f"Iter n° {iter + 1} (epochs {iter * self.pruning_epochs} to {(iter+1) * self.pruning_epochs -1}) - threshold = {keep_thres:.2e}")
+                for exp in self.exps :
+                    if exp['val_loss'][-1] > keep_thres and exp['alive']:
+                        self._kill_exp(exp, reason = 'Pruning')
         
-        pass
     
     def test(self, setting, test_only_surviving_exp:bool=True):
         
