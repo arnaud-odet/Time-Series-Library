@@ -17,6 +17,7 @@ import math
 import copy
 from pathlib import Path
 import pandas as pd
+from exp_list import EXPS
 
 warnings.filterwarnings('ignore')
 
@@ -24,9 +25,7 @@ warnings.filterwarnings('ignore')
 class Pruning(Exp_Basic):
     def __init__(self, 
                 args,
-                experiments:list,
-                pruning_epochs: int=2,
-                pruning_factor: float = 0.5,
+                experiments:list=None
                 ):
         """
         Run pruning over the provided exps.
@@ -41,13 +40,16 @@ class Pruning(Exp_Basic):
             os.mkdir(pruning_directory)
             os.mkdir(pruning_directory / 'learning_curves')
         self.path = pruning_directory
-        self.pruning_epochs = pruning_epochs
-        self.pruning_factor = pruning_factor
+        self.pruning_epochs = args.pruning_epochs
+        self.pruning_factor = args.pruning_factor
+        self.model_registry = {}
         if os.path.exists(pruning_directory/'pruning_logs.csv'):
             ldf = pd.read_csv(pruning_directory/'pruning_logs.csv', index_col = 0)
-            self.pr_id = ldf['pruning_id'].max()+1
+            self.pr_id = ldf['pr_id'].max()+1
         else :
             self.pr_id = 1
+        if experiments == None:
+            experiments = EXPS
         self.exps = self._build_exps(experiments)
        
      # Exps-related methods   
@@ -76,7 +78,7 @@ class Pruning(Exp_Basic):
         np.save(curves_path / f"{exp['id']}_train_loss.npy", exp['train_loss'])
         np.save(curves_path / f"{exp['id']}_val_loss.npy", exp['val_loss']) 
         self._log_exp(exp)              
-        print(f"    -> Killing exp {exp['id']} with a score of {exp['values'][-1]:.2e} | {reason}")  
+        print(f"    -> Killing exp {exp['id']} with a validation loss of {exp['val_loss'][-1]:.2e} | {reason}")  
               
     def _log_exp(self,exp):
         exp_log = {'pr_id':self.pr_id, 'lifetime': exp['train_loss'].shape[0], 'death': exp['death'], 'best_score':exp['best_score']}
@@ -84,7 +86,7 @@ class Pruning(Exp_Basic):
             ldf = pd.read_csv(self.path/'pruning_logs.csv')
             ldf.loc[exp['id']] = exp_log
         else :
-            ldf = pd.DataFrame(exp_log, index = exp['id'])
+            ldf = pd.DataFrame(exp_log, index = [exp['id']])
         ldf.to_csv(self.path/'pruning_logs.csv')
     
     # Model-related methods
@@ -98,9 +100,12 @@ class Pruning(Exp_Basic):
                 setattr(args, param_name, param_value)
             else:
                 print(f"Warning: Parameter '{param_name}' not found in args")
+        setattr(args, 'task_name', 'long_term_forecast')
         
         model = self.model_dict[args.model].Model(args).float()
-        model_optim = self._select_optimizer()
+        self._register_model(exp_id= exp['id'], model = model, model_args= args)
+        model = model.to(self.device)
+        model_optim = self._select_optimizer(model)
         scaler = None
         if self.args.use_amp:
             scaler = torch.cuda.amp.GradScaler()
@@ -110,17 +115,42 @@ class Pruning(Exp_Basic):
         data_set, data_loader = data_provider(self.args, flag)
         return data_set, data_loader
 
-    def _select_optimizer(self):
+    def _select_optimizer(self, model):
         if self.args.optimizer == 'adamw':
-            model_optim = optim.AdamW(self.model.parameters(), lr=self.args.learning_rate, weight_decay=self.args.wd)         
+            model_optim = optim.AdamW(model.parameters(), lr=self.args.learning_rate, weight_decay=self.args.wd)         
         else :
-            model_optim = optim.Adam(self.model.parameters(), lr=self.args.learning_rate)
+            model_optim = optim.Adam(model.parameters(), lr=self.args.learning_rate)
         return model_optim
 
     def _select_criterion(self):
         criterion = nn.MSELoss()
         return criterion    
          
+    def _register_model(self, 
+                    exp_id :str,
+                    model: nn.Module, 
+                    model_args = None):
+        """
+        Register a new model for training and tracking.
+        
+        Args:
+            model: PyTorch model
+            model_name: Human-readable name for the model
+            optimizer: Associated optimizer (optional, can be set later)
+            model_args: Arguments needed to instantiate the model (needed for loading)
+        """
+        
+        model_class = model.__class__
+        class_name = model_class.__name__
+        module_name = model_class.__module__
+                
+        # Register the model
+        self.model_registry[exp_id] = {
+            'model_class': class_name,
+            'model_module': module_name,
+            'model_args': model_args,
+        }
+            
     def _save_model(self, 
                     model_id: str, 
                     model: nn.Module, 
@@ -224,6 +254,7 @@ class Pruning(Exp_Basic):
         # Create model instance using saved arguments
         model = model_class(**model_args)
         model.load_state_dict(checkpoint['model_state_dict'])
+        model = model.to(self.device)
         
         # Load optimizer if requested and available
         optimizer = None
@@ -281,12 +312,11 @@ class Pruning(Exp_Basic):
 
     # Training 
     
-    def _training_epoch(self, model, model_optim, scaler, train_loader, criterion):
+    def _training_epoch(self, model, model_optim, scaler, train_loader, criterion, epoch:int):
 
         train_loss = []
         model.train()
         for i, (batch_x, batch_y, batch_x_mark, batch_y_mark) in enumerate(train_loader):
-            iter_count += 1
             model_optim.zero_grad()
             batch_x = batch_x.float().to(self.device)
             batch_y = batch_y.float().to(self.device)
@@ -301,7 +331,6 @@ class Pruning(Exp_Basic):
             if self.args.use_amp:
                 with torch.cuda.amp.autocast():
                     outputs = model(batch_x, batch_x_mark, dec_inp, batch_y_mark)
-
                     f_dim = -1 if self.args.features == 'MS' else 0
                     outputs = outputs[:, -self.args.pred_len:, f_dim:]
                     batch_y = batch_y[:, -self.args.pred_len:, f_dim:].to(self.device)
@@ -331,7 +360,7 @@ class Pruning(Exp_Basic):
                 model_optim.step()
 
         train_loss = np.average(train_loss)
-        adjust_learning_rate(model_optim, epoch + 1, self.args) ## REVOIR EPOCH ICI 
+        adjust_learning_rate(model_optim, epoch + 1, self.args) 
 
         return train_loss
     
@@ -354,7 +383,7 @@ class Pruning(Exp_Basic):
                     with torch.cuda.amp.autocast():
                         outputs = model(batch_x, batch_x_mark, dec_inp, batch_y_mark)
                 else:
-                    outputs = self.model(batch_x, batch_x_mark, dec_inp, batch_y_mark)
+                    outputs = model(batch_x, batch_x_mark, dec_inp, batch_y_mark)
                 f_dim = -1 if self.args.features == 'MS' else 0
                 outputs = outputs[:, -self.args.pred_len:, f_dim:]
                 batch_y = batch_y[:, -self.args.pred_len:, f_dim:].to(self.device)
@@ -369,15 +398,15 @@ class Pruning(Exp_Basic):
 
                 total_loss.append(loss)
         total_loss = np.average(total_loss)
-        self.model.train()
+        model.train()
         return total_loss
     
-    def train(self):
+    def train(self, setting=None):
         train_data, train_loader = self._get_data(flag='train')
         val_data, val_loader = self._get_data(flag='val')
         criterion = self._select_criterion()
        
-        n_iter = self.args.train_epochs // self.pruning_factor
+        n_iter = self.args.train_epochs // self.pruning_epochs
         for iter in range(n_iter):
             scores = []
             ids = []
@@ -389,36 +418,47 @@ class Pruning(Exp_Basic):
                         # Load last_model from checkpoint
                         model, model_optim, scaler = self.load_model(model_id= exp['id'], reason = 'last', load_optimizer=True, load_scaler=True)
                     for k in range(self.pruning_epochs):
-                        train_loss = self._training_epoch(model, model_optim, scaler, train_loader, criterion)
+                        epoch = self.pruning_epochs * iter + k 
+                        train_loss = self._training_epoch(model, model_optim, scaler, train_loader, criterion, epoch = epoch)
                         exp['train_loss'] = np.append(exp['train_loss'], train_loss)
                         val_loss = self._validation_step(model, val_loader, criterion)
                         exp['val_loss'] = np.append(exp['val_loss'], val_loss)
                         
                         # EarlyStopping logic
-                        self._save_model(model_id = exp['id'], model = model, optimizer = exp['model_optim'], reason = 'last')
-                        if exp['val_loss'][-1] < exp['best_score']:
+                        self._save_model(model_id = exp['id'], model = model, optimizer = model_optim, reason = 'last')
+                        if val_loss < exp['best_score']:
                             # Save best_model 
-                            self._save_model(model_id = exp['id'], model = model, optimizer = exp['model_optim'], reason = 'best')                            
+                            exp['best_score'] = val_loss
+                            self._save_model(model_id = exp['id'], model = model, optimizer = model_optim, reason = 'best')                            
                             exp['early_stopping_counter'] = 0
                         else :
                             exp['early_stopping_counter'] += 1
                             if exp['early_stopping_counter'] >= self.args.patience :
                                 self._kill_exp(exp, reason = 'EarlyStopping')
+                        
+                        print("Exp id : {} | epoch {} : train loss {:.3e}, val loss {:.3e} | earlystopping counter {}/{}".format(
+                            exp['id'],
+                            epoch,
+                            train_loss,
+                            val_loss,
+                            exp['early_stopping_counter'],
+                            self.args.patience
+                        ))
                                  
-                    ids.append[exp['id']]
+                    ids.append(exp['id'])
                     scores.append(val_loss)
             scores_series = pd.Series(scores, index = ids)
             scores_series = scores_series.sort_values(ascending = True)
-            n_exp_to_keep = int(scores_series.shape[0] * self.pruning_factor)
+            n_exp_to_keep = int(scores_series.shape[0] * (1- self.pruning_factor))
             keep_thres = scores_series.iloc[n_exp_to_keep]
-            print(f"Iter n° {iter + 1} - threshold = {keep_thres:.2e}")
+            print(f"Iter n° {iter + 1} (epochs {iter * self.pruning_epochs} to {(iter+1) * self.pruning_epochs -1}) - threshold = {keep_thres:.2e}")
             for exp in self.exps :
-                if exp['values'][-1] < keep_thres and exp['alive']:
+                if exp['val_loss'][-1] > keep_thres and exp['alive']:
                     self._kill_exp(exp, reason = 'Pruning')
         
         pass
     
-    def test(self, test_only_surviving_exp:bool=True):
+    def test(self, setting, test_only_surviving_exp:bool=True):
         
         test_data, test_loader = self._get_data(flag='test')
  
@@ -437,7 +477,7 @@ class Pruning(Exp_Basic):
 
                 preds = []
                 trues = []
-                folder_path = self.args.results_path + setting + '/' ### A revoir
+                folder_path = self.path + exp['id'] + '/' 
                 if not os.path.exists(folder_path):
                     os.makedirs(folder_path)
 
@@ -514,7 +554,7 @@ class Pruning(Exp_Basic):
                 mae, mse, rmse, mape, mspe, fde = metric(preds, trues)
                 print('fde:{:.4e}, rmse:{:.4e}, mse:{:.4e}, mae:{:.4e}, dtw:{}'.format(fde,rmse,mse, mae, dtw))
                 f = open("result_long_term_forecast.txt", 'a')
-                f.write(setting + "  \n")
+                f.write(exp['id'] + "  \n")
                 f.write('mse:{}, mae:{}, dtw:{}'.format(mse, mae, dtw))
                 f.write('\n')
                 f.write('\n')
@@ -533,5 +573,7 @@ class Pruning(Exp_Basic):
                         'nb_nontr_params':non_trainable_param_count,
                         'mae': mae, 'mse': mse, 'rmse': rmse, 'mape': mape, 'mspe': mspe, 'fde':fde}
                 
-                log(metrics=metrics, args = self.args)
+                if exp['alive']:
+                    self._log_exp(exp)
+                # log(metrics=metrics, args = self.args)
                 

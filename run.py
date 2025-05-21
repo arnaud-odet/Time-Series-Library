@@ -6,6 +6,7 @@ from exp.exp_imputation import Exp_Imputation
 from exp.exp_short_term_forecasting import Exp_Short_Term_Forecast
 from exp.exp_anomaly_detection import Exp_Anomaly_Detection
 from exp.exp_classification import Exp_Classification
+from exp.pruning import Pruning
 from utils.print_args import print_args
 import random
 import numpy as np
@@ -85,6 +86,7 @@ if __name__ == '__main__':
                         help='the length of segmen-wise iteration of SegRNN')
     
     # ARO added
+    ## Misc
     parser.add_argument('--skip_co', type=bool, default=True, help='use skip connections')
     parser.add_argument('--d_lstm', type=int, default=128, help='dimension of LSTM encoder layers')
     parser.add_argument('--lstm_layers', type=int, default=2, help='num of LSTM encoder layers')    
@@ -97,10 +99,11 @@ if __name__ == '__main__':
     parser.add_argument('--consider_only_offense', action ="store_true", default=False, 
                         help='Consider only offensive plays') 
     parser.add_argument('--results_path', type=str, default='./results/', help='location of results checkpoints')
-     
-
- 
-
+    ## Pruning
+    parser.add_argument('--pruning_epochs', type=int, default=1, help='Number of epoch after which pruning is performed')
+    parser.add_argument('--pruning_factor', type=float, default=0.5, help='Pruning reduction factor')
+    parser.add_argument('--pruning_directory', type=str, default='./pruning/', help='Directory to store pruning exp, results, and logs')
+    
     
     # optimization
     parser.add_argument('--num_workers', type=int, default=10, help='data loader num workers')
@@ -179,6 +182,8 @@ if __name__ == '__main__':
         Exp = Exp_Anomaly_Detection
     elif args.task_name == 'classification':
         Exp = Exp_Classification
+    elif args.task_name == 'pruning':
+        Exp = Pruning
     else:
         Exp = Exp_Long_Term_Forecast
 

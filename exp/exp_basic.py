@@ -51,7 +51,8 @@ class Exp_Basic(object):
             self.model_dict['Mamba'] = Mamba
 
         self.device = self._acquire_device()
-        self.model = self._build_model().to(self.device)
+        if not self.args.task_name == 'pruning':
+            self.model = self._build_model().to(self.device)
 
     def _build_model(self):
         raise NotImplementedError

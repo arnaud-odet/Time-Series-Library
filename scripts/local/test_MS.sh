@@ -4,7 +4,8 @@
 RECEIVED_ARGS=("$@")
 
 CONSTANT_ARGS=(
-  "--task_name" "long_term_forecast"
+  "--task_name" "pruning"
+  # "--task_name" "long_term_forecast"
   "--is_training" 1
   "--root_path" "./dataset/USC/"
   "--checkpoints" "./checkpoints/"
@@ -51,46 +52,8 @@ python -u run.py "${FINAL_ARGS[@]}" \
   --model Transformer \
   --d_model 256 \
   --d_ff 128 \
-  --learning_rate 0.0001 \
+  --learning_rate 0.0005 \
   --dropout 0.1 \
-  --wd 0.05
-
-python -u run.py "${FINAL_ARGS[@]}" \
-  --model Transformer2D \
-  --d_model 256 \
-  --d_ff 128 \
-  --learning_rate 0.0001 \
-  --dropout 0.1 \
-  --wd 0.05
-
-python -u run.py "${FINAL_ARGS[@]}" \
-  --model Transformer \
-  --d_model 64 \
-  --d_ff 64 \
-  --learning_rate 0.0001 \
-  --dropout 0.1 \
-  --wd 0.05
-
-python -u run.py "${FINAL_ARGS[@]}" \
-  --model Transformer2D \
-  --d_model 64 \
-  --d_ff 64 \
-  --learning_rate 0.0001 \
-  --dropout 0.1 \
-  --wd 0.05
-
-python -u run.py "${FINAL_ARGS[@]}" \
-  --model Transformer \
-  --d_model 512 \
-  --d_ff 256 \
-  --learning_rate 0.0001 \
-  --dropout 0.1 \
-  --wd 0.05
-
-python -u run.py "${FINAL_ARGS[@]}" \
-  --model Transformer2D \
-  --d_model 512 \
-  --d_ff 256 \
-  --learning_rate 0.0001 \
-  --dropout 0.1 \
-  --wd 0.05
+  --wd 0.05 \
+  --pruning_factor 0.6 \
+  --pruning_epochs 2
