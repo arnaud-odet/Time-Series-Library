@@ -103,6 +103,7 @@ if __name__ == '__main__':
     parser.add_argument('--pruning_epochs', type=int, default=1, help='Number of epoch after which pruning is performed')
     parser.add_argument('--pruning_factor', type=float, default=0.5, help='Pruning reduction factor')
     parser.add_argument('--pruning_directory', type=str, default='./pruning/', help='Directory to store pruning exp, results, and logs')
+    parser.add_argument('--pruning_configs', type=str, default=None, help='Config json file for pruning')
     
     
     # optimization

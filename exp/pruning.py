@@ -17,15 +17,14 @@ import math
 import copy
 from pathlib import Path
 import pandas as pd
-from exp_list import EXPS
+import json
 
 warnings.filterwarnings('ignore')
 
 
 class Pruning(Exp_Basic):
     def __init__(self, 
-                args,
-                experiments:list=None
+                args
                 ):
         """
         Run pruning over the provided exps.
@@ -43,13 +42,20 @@ class Pruning(Exp_Basic):
         self.pruning_epochs = args.pruning_epochs
         self.pruning_factor = args.pruning_factor
         self.model_registry = {}
-        if os.path.exists(pruning_directory/'pruning_logs.csv'):
-            ldf = pd.read_csv(pruning_directory/'pruning_logs.csv', index_col = 0)
-            self.pr_id = ldf['pr_id'].max()+1
+        if os.path.exists(pruning_directory/'pr_ids.npy'):
+            pr_ids = np.load(pruning_directory/'pr_ids.npy')
+            self.pr_id = pr_ids.max() + 1
+            pr_ids = np.append(pr_ids, self.pr_id)
+            np.save(pruning_directory/'pr_ids.npy', pr_ids)
         else :
             self.pr_id = 1
-        if experiments == None:
-            experiments = EXPS
+            np.save(pruning_directory/'pr_ids.npy', self.pr_id)     
+        if args.pruning_configs is not None :
+            pruning_config_file = args.pruning_configs
+        else :
+            pruning_config_file = f"experiments_list_th{args.pred_len}_{args.features}.json"
+        with open(pruning_config_file) as f:
+            experiments = json.load(f)
         self.exps = self._build_exps(experiments)
         self.n_exp_alive = len(self.exps)
        
@@ -78,18 +84,36 @@ class Pruning(Exp_Basic):
         curves_path = self.path / 'learning_curves'
         np.save(curves_path / f"{exp['id']}_train_loss.npy", exp['train_loss'])
         np.save(curves_path / f"{exp['id']}_val_loss.npy", exp['val_loss']) 
-        self._log_exp(exp)  
+        self._log_exp_training(exp)  
         self.n_exp_alive = self.n_exp_alive -1            
-        print(f"    -> Killing exp {exp['id']:6} with a validation loss of {exp['val_loss'][-1]:.2e} | {reason}")  
+        print(f"      -> Killing exp {exp['id']:6} with a validation loss of {exp['val_loss'][-1]:.2e} | {reason}")  
               
-    def _log_exp(self,exp):
-        exp_log = {'pr_id':self.pr_id, 'lifetime': exp['train_loss'].shape[0], 'death': exp['death'], 'best_score':exp['best_score']}
+    def _log_exp_training(self,exp):
+        exp_id = int(exp['id'].split('_')[-1])
+        exp_log = {'pr_id':self.pr_id, 'sub_id' : exp_id, 'seq_len':self.args.seq_len, 'pred_len':self.args.pred_len, 'features':self.args.features, 
+                   'lifetime': exp['train_loss'].shape[0], 'death': exp['death'], 'best_score':exp['best_score']}
+        exp_log.update(exp['hp'])
+        log = pd.DataFrame(exp_log, index = [exp['id']])
         if os.path.exists(self.path/'pruning_logs.csv'):
             ldf = pd.read_csv(self.path/'pruning_logs.csv', index_col = 0)
-            ldf.loc[exp['id']] = exp_log
+            ldf = pd.concat([ldf, log])
         else :
-            ldf = pd.DataFrame(exp_log, index = [exp['id']])
+            ldf = log
         ldf.to_csv(self.path/'pruning_logs.csv')
+        
+    def _log_exp_testing(self,exp, metrics):
+        exp_id = int(exp['id'].split('_')[-1])
+        exp_log = {'pr_id':self.pr_id, 'sub_id' : exp_id, 'seq_len':self.args.seq_len, 'pred_len':self.args.pred_len, 'features':self.args.features, 
+                   'lifetime': exp['train_loss'].shape[0], 'death': exp['death'], 'best_val_score':exp['best_score']}
+        exp_log.update(exp['hp'])
+        exp_log.update(metrics)
+        log = pd.DataFrame(exp_log, index = [exp['id']])
+        if os.path.exists(self.path/'testing_logs.csv'):
+            ldf = pd.read_csv(self.path/'testing_logs.csv', index_col = 0)
+            ldf = pd.concat([ldf, log])
+        else :
+            ldf = log
+        ldf.to_csv(self.path/'testing_logs.csv')
     
     # Model-related methods
     
@@ -312,7 +336,7 @@ class Pruning(Exp_Basic):
         
         return model, optimizer, scaler
 
-    # Training 
+    # Training utils
     
     def _training_epoch(self, model, model_optim, scaler, train_loader, criterion, epoch:int):
 
@@ -403,17 +427,15 @@ class Pruning(Exp_Basic):
         model.train()
         return total_loss
     
-    def train(self, setting=None):
-        train_data, train_loader = self._get_data(flag='train')
-        val_data, val_loader = self._get_data(flag='val')
-        criterion = self._select_criterion()
-       
+    def _pruning_loop(self, train_loader, val_loader, criterion):
+        print("-> First step : pruning exepriments ")
         n_iter = self.args.train_epochs // self.pruning_epochs
+        last_epoch = 0
         for iter in range(n_iter):
             scores = []
             ids = []
-            if not self.n_exp_alive == 0 :
-                
+            if self.n_exp_alive > 1 : 
+                print(f"Running iteration n° {iter + 1} : epochs {iter * self.pruning_epochs } to {(iter+1) * self.pruning_epochs -1} ") 
                 for exp in self.exps :
                     if exp['alive']:
                         if iter == 0 :
@@ -422,66 +444,133 @@ class Pruning(Exp_Basic):
                             # Load last_model from checkpoint
                             model, model_optim, scaler = self.load_model(model_id= exp['id'], reason = 'last', load_optimizer=True, load_scaler=True)
                         for k in range(self.pruning_epochs):
-                            epoch = self.pruning_epochs * iter + k 
-                            train_loss = self._training_epoch(model, model_optim, scaler, train_loader, criterion, epoch = epoch)
-                            exp['train_loss'] = np.append(exp['train_loss'], train_loss)
-                            val_loss = self._validation_step(model, val_loader, criterion)
-                            exp['val_loss'] = np.append(exp['val_loss'], val_loss)
-                            
-                            # EarlyStopping logic
-                            self._save_model(model_id = exp['id'], model = model, optimizer = model_optim, reason = 'last')
-                            if val_loss < exp['best_score']:
-                                # Save best_model 
-                                exp['best_score'] = val_loss
-                                self._save_model(model_id = exp['id'], model = model, optimizer = model_optim, reason = 'best')                            
-                                exp['early_stopping_counter'] = 0
-                            else :
-                                exp['early_stopping_counter'] += 1
-                            
-                            print("Exp id : {:6} | epoch {:3} : train loss {:.2e}, val loss {:.2e} | earlystopping counter {}/{}".format(
-                                exp['id'],
-                                epoch,
-                                train_loss,
-                                val_loss,
-                                exp['early_stopping_counter'],
-                                self.args.patience
-                            ))
-                            if exp['early_stopping_counter'] >= self.args.patience :
-                                self._kill_exp(exp, reason = 'EarlyStopping')
+                            if exp['alive']:
+                                epoch = self.pruning_epochs * iter + k 
+                                last_epoch =max(last_epoch, epoch)
+                                train_loss = self._training_epoch(model, model_optim, scaler, train_loader, criterion, epoch = epoch)
+                                exp['train_loss'] = np.append(exp['train_loss'], train_loss)
+                                val_loss = self._validation_step(model, val_loader, criterion)
+                                exp['val_loss'] = np.append(exp['val_loss'], val_loss)
+                                
+                                # EarlyStopping logic
+                                self._save_model(model_id = exp['id'], model = model, optimizer = model_optim, scaler= scaler, reason = 'last')
+                                if val_loss < exp['best_score']:
+                                    # Save best_model 
+                                    exp['best_score'] = val_loss
+                                    self._save_model(model_id = exp['id'], model = model, optimizer = model_optim, reason = 'best')                            
+                                    exp['early_stopping_counter'] = 0
+                                else :
+                                    exp['early_stopping_counter'] += 1
+                                
+                                print("  Exp id : {:6} | model : {:26} | epoch {:3} : train loss {:.2e}, val loss {:.2e} | earlystopping counter {}/{}".format(
+                                    exp['id'],
+                                    exp['hp']['model'],
+                                    epoch,
+                                    train_loss,
+                                    val_loss,
+                                    exp['early_stopping_counter'],
+                                    self.args.patience
+                                ))
+                                if exp['early_stopping_counter'] >= self.args.patience :
+                                    self._kill_exp(exp, reason = 'early_stopping')
                                     
                         ids.append(exp['id'])
                         scores.append(val_loss)
                 
                 scores_series = pd.Series(scores, index = ids)
                 scores_series = scores_series.sort_values(ascending = True)
-                n_exp_to_keep = int(scores_series.shape[0] * (1- self.pruning_factor))
+                n_exp_to_keep = max(int(scores_series.shape[0] * (1- self.pruning_factor)),1)
                 keep_thres = scores_series.iloc[n_exp_to_keep-1]
-                print(f"Iter n° {iter + 1} (epochs {iter * self.pruning_epochs} to {(iter+1) * self.pruning_epochs -1}) - threshold = {keep_thres:.2e}")
+                print(f"Iteration n° {iter + 1} | epochs {iter * self.pruning_epochs} to {(iter+1) * self.pruning_epochs -1} | threshold = {keep_thres:.2e}")
                 for exp in self.exps :
                     if exp['val_loss'][-1] > keep_thres and exp['alive']:
-                        self._kill_exp(exp, reason = 'Pruning')
+                        self._kill_exp(exp, reason = 'pruning')
+            
+            else:
+                last_alive = None
+                for exp in self.exps :
+                    if exp['alive']:
+                        last_alive = exp
+                return last_alive, last_epoch
+            
+    def _last_exp_training_loop(self, last_alive_exp, last_epoch, train_loader, val_loader, criterion):
+        n_remaining_epochs = self.args.train_epochs - last_epoch
+        if n_remaining_epochs > 0 and last_alive_exp is not None :
+            model, model_optim, scaler = self.load_model(model_id= last_alive_exp['id'], reason = 'last', load_optimizer=True, load_scaler=True)
+
+            print("-> Second step : finishing training of last alive experiment")
+
+            for k in range(n_remaining_epochs):
+                if last_alive_exp['alive']:
+                    epoch = last_epoch + k +1 
+                    train_loss = self._training_epoch(model, model_optim, scaler, train_loader, criterion, epoch = epoch)
+                    last_alive_exp['train_loss'] = np.append(last_alive_exp['train_loss'], train_loss)
+                    val_loss = self._validation_step(model, val_loader, criterion)
+                    last_alive_exp['val_loss'] = np.append(last_alive_exp['val_loss'], val_loss)
+                    
+                    # EarlyStopping logic
+                    self._save_model(model_id = last_alive_exp['id'], model = model, optimizer = model_optim, scaler= scaler, reason = 'last')
+                    if val_loss < last_alive_exp['best_score']:
+                        # Save best_model 
+                        last_alive_exp['best_score'] = val_loss
+                        self._save_model(model_id = last_alive_exp['id'], model = model, optimizer = model_optim, reason = 'best')                            
+                        last_alive_exp['early_stopping_counter'] = 0
+                    else :
+                        last_alive_exp['early_stopping_counter'] += 1
+                    
+                    print("  Exp id : {:6} | model : {:26} | epoch {:3} : train loss {:.2e}, val loss {:.2e} | earlystopping counter {}/{}".format(
+                        last_alive_exp['id'],
+                        last_alive_exp['hp']['model'],
+                        epoch,
+                        train_loss,
+                        val_loss,
+                        last_alive_exp['early_stopping_counter'],
+                        self.args.patience
+                    ))
+                    if last_alive_exp['early_stopping_counter'] >= self.args.patience :
+                        self._kill_exp(last_alive_exp, reason = 'EarlyStopping')                    
+            
+    # Main training methods
+
+    def train(self, setting=None):
+
+        print(">>> TRAINING <<<")
+        train_data, train_loader = self._get_data(flag='train')
+        val_data, val_loader = self._get_data(flag='val')
+        criterion = self._select_criterion()
+       
+        last_alive_exp, last_epoch = self._pruning_loop(train_loader=train_loader, val_loader=val_loader, criterion=criterion)
+        self._last_exp_training_loop(last_alive_exp=last_alive_exp,
+                                     last_epoch=last_epoch,
+                                     train_loader=train_loader,
+                                     val_loader=val_loader,
+                                     criterion=criterion)
+        # Logging the training of alive exps
+        for exp in self.exps :
+            if exp['alive']:
+                self._kill_exp(exp, reason = 'epoch_budget')
+                
+        print("-> Training completed")
+                        
+    def test(self, setting, test_pruned_exps:bool=False):
         
-    
-    def test(self, setting, test_only_surviving_exp:bool=True):
-        
+        print(">>> TESTING <<<")
         test_data, test_loader = self._get_data(flag='test')
  
         for exp in self.exps:
-            test_exp = False
+            test_exp = True
             # Selecting exps to test
-            if test_only_surviving_exp :
-                if exp['alive']:
-                    test_exp = True
-            else :
-                test_exp = True
+            if not test_pruned_exps :
+                if exp['death'] == 'pruning' :
+                    test_exp = False
 
             if test_exp :
                 # Load best_model from checkpoint
-                model, _, _ = self.load_model(model_id= exp['id'], reason = 'last', load_optimizer=False, load_scaler=False)
+                model, _, _ = self.load_model(model_id= exp['id'], reason = 'best', load_optimizer=False, load_scaler=False)
 
                 preds = []
                 trues = []
-                folder_path = self.path + exp['id'] + '/' 
+                folder_path = self.path / exp['id']  
                 if not os.path.exists(folder_path):
                     os.makedirs(folder_path)
 
@@ -533,51 +622,28 @@ class Pruning(Exp_Basic):
 
                 preds = np.concatenate(preds, axis=0)
                 trues = np.concatenate(trues, axis=0)
-                #print('test shape:', preds.shape, trues.shape)
                 preds = preds.reshape(-1, preds.shape[-2], preds.shape[-1])
                 trues = trues.reshape(-1, trues.shape[-2], trues.shape[-1])
-                #print('test shape:', preds.shape, trues.shape)
-
-                
-                # dtw calculation
-                if self.args.use_dtw:
-                    dtw_list = []
-                    manhattan_distance = lambda x, y: np.abs(x - y)
-                    for i in range(preds.shape[0]):
-                        x = preds[i].reshape(-1,1)
-                        y = trues[i].reshape(-1,1)
-                        if i % 100 == 0:
-                            print("calculating dtw iter:", i)
-                        d, _, _, _ = accelerated_dtw(x, y, dist=manhattan_distance)
-                        dtw_list.append(d)
-                    dtw = np.array(dtw_list).mean()
-                else:
-                    dtw = 'not calculated'
                     
-
                 mae, mse, rmse, mape, mspe, fde = metric(preds, trues)
-                print('fde:{:.4e}, rmse:{:.4e}, mse:{:.4e}, mae:{:.4e}, dtw:{}'.format(fde,rmse,mse, mae, dtw))
+                metrics = {'mae':mae, 'mse':mse, 'mape':mape, 'mspe':mspe, 'rmse':rmse, 'fde':fde}
+                # print('fde:{:.4e}, rmse:{:.4e}, mse:{:.4e}, mae:{:.4e}'.format(fde,rmse,mse, mae))
                 f = open("result_long_term_forecast.txt", 'a')
                 f.write(exp['id'] + "  \n")
-                f.write('mse:{}, mae:{}, dtw:{}'.format(mse, mae, dtw))
+                f.write('mse:{}, mae:{}'.format(mse, mae))
                 f.write('\n')
                 f.write('\n')
                 f.close()
-
-                np.save(folder_path + 'metrics.npy', np.array([mae, mse, rmse, mape, mspe]))
-                np.save(folder_path + 'pred.npy', preds)
-                np.save(folder_path + 'true.npy', trues)
                 
-                # logging
-                trainable_param_count = sum(p.numel() for p in model.parameters() if p.requires_grad)
-                non_trainable_param_count = sum(p.numel() for p in model.parameters() if not p.requires_grad)
-                non_trainable_param_count += sum(b.numel() for b in model.buffers())
-                metrics = {'nb_params':trainable_param_count+ non_trainable_param_count, 
-                        'nb_tr_params':trainable_param_count,
-                        'nb_nontr_params':non_trainable_param_count,
-                        'mae': mae, 'mse': mse, 'rmse': rmse, 'mape': mape, 'mspe': mspe, 'fde':fde}
+                print("  Exp id : {:6} | model : {:26} | RMSE : {:.2e} | FDE {:.2e} ".format(
+                    exp['id'],
+                    exp['hp']['model'],
+                    rmse,
+                    fde))
+                np.save(folder_path / 'metrics.npy', np.array([mae, mse, rmse, mape, mspe]))
+                np.save(folder_path / 'pred.npy', preds)
+                np.save(folder_path / 'true.npy', trues)
                 
-                if exp['alive']:
-                    self._log_exp(exp)
+                self._log_exp_testing(exp, metrics=metrics)
                 # log(metrics=metrics, args = self.args)
                 

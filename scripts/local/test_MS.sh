@@ -16,6 +16,7 @@ CONSTANT_ARGS=(
   "--embed" "fixed"
   "--consider_only_offense"
   "--inverse"
+  "--use_amp"
   "--itr" 1
 )
 
@@ -25,18 +26,22 @@ LOCAL_ARGS=(
   "--pred_len" 32
   "--label_len" 8
   "--batch_size" 128
-  "--train_epochs" 48
+  "--train_epochs" 4
   "--patience" 6
   "--optimizer" "adamw"
-  "--wd" 0.01
+  "--wd" 0.01 # Will be overwritten
   "--features" "MS"
   "--enc_in" 61
-  "--dec_in" 1
-  "--c_out" 1
-  "--e_layers" 2
-  "--d_model" 512
-  "--n_heads" 4
-  "--d_layers" 2
+  "--dec_in" 61
+  "--c_out" 61
+  "--e_layers" 2 # Will be overwritten
+  "--model" "Transformer" # Will be overwritten
+  "--d_model" 512 # Will be overwritten
+  "--n_heads" 8 
+  "--d_layers" 2 # Will be overwritten
+  "--learning_rate" 0.0005 # Will be overwritten
+  "--dropout" 0.1 # Will be overwritten
+  
   # "--loss" "FDE"
   # "--lr_scheduler"
 )
@@ -49,11 +54,5 @@ FINAL_ARGS=(
 
 
 python -u run.py "${FINAL_ARGS[@]}" \
-  --model Transformer \
-  --d_model 256 \
-  --d_ff 128 \
-  --learning_rate 0.0005 \
-  --dropout 0.1 \
-  --wd 0.05 \
   --pruning_factor 0.5 \
-  --pruning_epochs 2
+  --pruning_epochs 1
