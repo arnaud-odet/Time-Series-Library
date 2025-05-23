@@ -160,7 +160,7 @@ class Exp_Long_Term_Forecast(Exp_Basic):
                     iter_count = 0
                     time_now = time.time()
                     left_time_str = f"{int(left_time//60)} min {int(left_time%60)} secs" if left_time > 60 else f"{left_time:.1f} secs"
-                print(f"Running epoch {epoch+1} - batch n° {i+1}/{train_steps} - estimated remaining time : {left_time_str}           ", end = '\r')
+                # print(f"Running epoch {epoch+1} - batch n° {i+1}/{train_steps} - estimated remaining time : {left_time_str}           ", end = '\r')
 
                 if self.args.use_amp:
                     scaler.scale(loss).backward()

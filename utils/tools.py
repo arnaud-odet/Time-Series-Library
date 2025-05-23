@@ -27,6 +27,39 @@ def adjust_learning_rate(optimizer, epoch, args):
         # print('Updating learning rate to {}'.format(lr))
 
 
+def adjust_learning_rate_pruning(optimizer, 
+                                 max_lr:float,
+                                 min_lr:float,
+                                 epoch:int, 
+                                 pruning_epoch:int, 
+                                 n_iter:int, 
+                                 n_iter_per_epoch:int, 
+                                 warmup_fraction : float = 0.25,
+                                 restart_factor : int = 0.5):
+    """
+    Adjust the learning rate with cycle for pruning scenario
+    """
+    cycle_length = pruning_epoch * n_iter_per_epoch
+    step_in_cycle = (epoch % pruning_epoch)*n_iter_per_epoch + n_iter
+    warmup_steps = warmup_fraction * cycle_length
+    
+    n_cycles = epoch // pruning_epoch
+    rest_max_lr = max_lr * restart_factor ** n_cycles
+    rest_min_lr = min_lr * restart_factor ** n_cycles
+    
+    if step_in_cycle < warmup_steps :
+        warmup_progress = step_in_cycle / warmup_steps
+        lr = rest_min_lr + (rest_max_lr - rest_min_lr) * warmup_progress
+    else :
+        cosine_steps = cycle_length - warmup_steps
+        cosine_progress = (step_in_cycle - warmup_steps) / cosine_steps
+        cosine_factor = 0.5 * (1 + np.cos(np.pi * cosine_progress))
+        lr = rest_min_lr + (rest_max_lr - rest_min_lr) * cosine_factor      
+
+    for param_group in optimizer.param_groups:
+        param_group['lr'] = lr    
+
+
 class EarlyStopping:
     def __init__(self, patience=7, verbose=False, delta=0):
         self.patience = patience

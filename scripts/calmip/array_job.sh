@@ -1,10 +1,11 @@
 #!/bin/bash
 #SBATCH --job-name=array_job
-#SBATCH --array=0-161%8  
+#SBATCH --array=0-7%6  
 #SBATCH --mem=20G
 #SBATCH --ntasks-per-node=9
 #SBATCH --ntasks-per-core=1
 #SBATCH --gres=gpu:1
+#SBATCH --time=4-00:00:00
 #SBATCH --mail-user=arnaud.odet@math.univ-toulouse.fr
 #SBATCH --mail-type=ALL
 
@@ -45,11 +46,11 @@ echo "Job name: $JOB_NAME"
 echo "Time limit: $TIME_LIMIT"
 echo "Arguments: $ARGUMENTS"
 
-# Validate time limit format - should be HH:MM:SS
-if ! [[ "$TIME_LIMIT" =~ ^[0-9]{2}:[0-9]{2}:[0-9]{2}$ ]]; then
-    echo "WARNING: Time limit '$TIME_LIMIT' does not match expected format HH:MM:SS"
-    # You could add fallback here
-    # TIME_LIMIT="08:00:00"  # Default to 8 hours if invalid
+# Validate time limit format - can be HH:MM:SS or D-HH:MM:SS or DD-HH:MM:SS
+if ! [[ "$TIME_LIMIT" =~ ^([0-9]{1,2}-)?[0-9]{2}:[0-9]{2}:[0-9]{2}$ ]]; then
+    echo "WARNING: Time limit '$TIME_LIMIT' does not match expected format [D-]HH:MM:SS or [DD-]HH:MM:SS"
+    echo "Using default time limit of 4 days (4-00:00:00)"
+    TIME_LIMIT="4-00:00:00"  # Default to 4 days if invalid
 fi
 
 # Set the time limit for this specific job

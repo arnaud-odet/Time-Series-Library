@@ -26,11 +26,11 @@ class Model(nn.Module):
         # Create multiple linear layers if specified
         for i in range(configs.d_layers - 1):
             decoder_layers.extend([
-                nn.Linear(input_size, configs.d_model),
+                nn.Linear(input_size, configs.d_ff),
                 nn.ReLU(),
                 nn.Dropout(configs.dropout)
             ])
-            input_size = configs.d_model
+            input_size = configs.d_ff
             
         # Final output layer
         decoder_layers.append(nn.Linear(input_size, configs.c_out))

@@ -26,7 +26,7 @@ LOCAL_ARGS=(
   "--pred_len" 32
   "--label_len" 8
   "--batch_size" 128
-  "--train_epochs" 4
+  "--train_epochs" 20
   "--patience" 6
   "--optimizer" "adamw"
   "--wd" 0.01 # Will be overwritten
@@ -55,4 +55,4 @@ FINAL_ARGS=(
 
 python -u run.py "${FINAL_ARGS[@]}" \
   --pruning_factor 0.5 \
-  --pruning_epochs 1
+  --pruning_epochs 3
