@@ -2,10 +2,10 @@ import argparse
 import os
 import torch
 from exp.exp_long_term_forecasting import Exp_Long_Term_Forecast
-from exp.exp_imputation import Exp_Imputation
-from exp.exp_short_term_forecasting import Exp_Short_Term_Forecast
-from exp.exp_anomaly_detection import Exp_Anomaly_Detection
-from exp.exp_classification import Exp_Classification
+# from exp.exp_imputation import Exp_Imputation
+# from exp.exp_short_term_forecasting import Exp_Short_Term_Forecast
+# from exp.exp_anomaly_detection import Exp_Anomaly_Detection
+# from exp.exp_classification import Exp_Classification
 from exp.pruning import Pruning
 from utils.print_args import print_args
 import random
@@ -103,7 +103,7 @@ if __name__ == '__main__':
     parser.add_argument('--pruning_epochs', type=int, default=1, help='Number of epoch after which pruning is performed')
     parser.add_argument('--pruning_factor', type=float, default=0.5, help='Pruning reduction factor')
     parser.add_argument('--pruning_directory', type=str, default='./pruning/', help='Directory to store pruning exp, results, and logs')
-    parser.add_argument('--pruning_configs', type=str, default=None, help='Config json file for pruning')
+    parser.add_argument('--pruning_config_file', type=str, default=None, help='Config json file for pruning')
     
     
     # optimization

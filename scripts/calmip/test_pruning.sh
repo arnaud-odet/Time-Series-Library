@@ -3,13 +3,15 @@
 # Store received arguments
 RECEIVED_ARGS=("$@")
 
-CONSTANT_ARGS=(
+LOCAL_ARGS=(
   "--task_name" "pruning"
+  "--pruning_config_file" "./test_architectures.json"
   # "--task_name" "long_term_forecast"
   "--is_training" 1
-  "--root_path" "./dataset/USC/"
-  "--checkpoints" "./checkpoints/"
-  "--results_path" "./results/"
+  "--root_path" "/tmpdir/arnaud/dataset/USC/"
+  "--checkpoints" "/tmpdir/arnaud/checkpoints/"
+  "--results_path" "/tmpdir/arnaud/results/"
+  "--pruning_directory" "/tmpdir/arnaud/pruning/"
   "--data_path" "na"
   "--data" "USC"
   "--des" "Exp"
@@ -18,13 +20,10 @@ CONSTANT_ARGS=(
   "--inverse"
   "--use_amp"
   "--itr" 1
-)
-
-LOCAL_ARGS=(
   "--model_id" "USC_32_32"
   "--seq_len" 32
   "--pred_len" 32
-  "--label_len" 8
+  "--label_len" 16
   "--batch_size" 128
   "--train_epochs" 20
   "--patience" 6
@@ -48,7 +47,6 @@ LOCAL_ARGS=(
 
 FINAL_ARGS=(
     "${RECEIVED_ARGS[@]}"
-    "${CONSTANT_ARGS[@]}"
     "${LOCAL_ARGS[@]}"
 ) 
 

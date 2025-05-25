@@ -1,0 +1,58 @@
+[
+    {
+        "e_layers": 2,
+        "d_model": 128,
+        "d_layers": 1,
+        "d_ff": 64,
+        "model": "Transformer"
+    },
+    {
+        "e_layers": 2,
+        "d_model": 128,
+        "d_layers": 1,
+        "d_ff": 64,
+        "model": "Transformer2D"
+    },
+    {
+        "e_layers": 2,
+        "d_model": 128,
+        "d_layers": 1,
+        "d_ff": 64,
+        "model": "Crossformer"
+    },
+    {
+        "e_layers": 2,
+        "d_model": 128,
+        "d_layers": 1,
+        "d_ff": 64,
+        "model": "Pyraformer"
+    },
+    {
+        "e_layers": 2,
+        "d_model": 128,
+        "d_layers": 1,
+        "d_ff": 64,
+        "model": "PatchTST"
+    },
+    {
+        "e_layers": 2,
+        "d_model": 256,
+        "d_layers": 1,
+        "d_ff": 128,
+        "model": "Nonstationary_Transformer"
+    },
+    {
+        "e_layers": 2,
+        "d_model": 128,
+        "d_layers": 1,
+        "d_ff": 64,
+        "model": "iTransformer"
+    },
+    {
+        "e_layers": 2,
+        "d_model": 128,
+        "d_layers": 1,
+        "d_ff": 64,
+        "model": "LSTM"
+    }
+]

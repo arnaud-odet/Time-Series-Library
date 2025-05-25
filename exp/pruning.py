@@ -46,10 +46,11 @@ class Pruning(Exp_Basic):
         else :
             self.pr_id = 1
             np.save(pruning_directory/'pr_ids.npy', self.pr_id)     
-        if args.pruning_configs is not None :
-            pruning_config_file = args.pruning_configs
+        if args.pruning_config_file is not None :
+            pruning_config_file = args.pruning_config_file
         else :
             pruning_config_file = f"experiments_list_th{args.pred_len}_{args.features}.json"
+        self.pruning_config_file = pruning_config_file
         with open(pruning_config_file) as f:
             experiments = json.load(f)
         self.exps = self._build_exps(experiments)
@@ -61,12 +62,13 @@ class Pruning(Exp_Basic):
         print("\033[1m" + "Basic Config" + "\033[0m")
         print(f'  {"Task Name:":<20}{self.args.task_name:<20}{"Is Training:":<20}{self.args.is_training:<20}')
         print(f'  {"Pruning epochs:":<20}{self.pruning_epochs:<20}{"Pruning factor:":<20}{self.pruning_factor:<20}')
-        print(f'  {"N experiments:":<20}{self.n_exp_alive:<20}')
+        print(f'  {"N experiments:":<20}{self.n_exp_alive:<20}{"Config_list:":<20}{self.pruning_config_file:<20}')
         print()
 
-        print("\033[1m" + "Data Loader" + "\033[0m")
+        print("\033[1m" + "Data" + "\033[0m")
         print(f'  {"Data:":<20}{self.args.data:<20}{"Root Path:":<20}{self.args.root_path:<20}')
         print(f'  {"Checkpoints:":<20}{self.args.checkpoints:<20}{"Features:":<20}{self.args.features:<20}')
+        print(f'  {"Checkpoints:":<20}{self.args.checkpoints:<20}')        
         print()
 
         print("\033[1m" + "Forecasting Task" + "\033[0m")
@@ -117,8 +119,7 @@ class Pruning(Exp_Basic):
             print(f"      -> Killing exp {exp['id']:6} with a validation loss of {exp['val_loss'][-1]:.2e} | {reason}")  
         else :
             print(f"      -> Killing exp {exp['id']:6} | {reason}")  
-            
-        
+                   
     def _log_exp(self, exp, log_type:str = 'train', metrics = None):
         exp_id = int(exp['id'].split('_')[-1])
         exp_log = {'pr_id':self.pr_id, 'sub_id' : exp_id, 'seq_len':self.args.seq_len, 'pred_len':self.args.pred_len, 'features':self.args.features, 
