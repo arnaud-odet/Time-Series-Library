@@ -70,6 +70,6 @@ python -u run.py "${FINAL_ARGS[@]}" \
 #   --patience 4 \
 #   --pruning_factor 0.5 \
 #   --pruning_epochs 3 \
-#   --pruning_id 2 \
+#   --pruning_id 1 \
 #   --pruning_config_file ./test_architectures.json \
 #   --pruning_directory ./pruning
