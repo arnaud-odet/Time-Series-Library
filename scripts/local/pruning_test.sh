@@ -5,8 +5,6 @@ RECEIVED_ARGS=("$@")
 
 CONSTANT_ARGS=(
   "--task_name" "pruning"
-  "--pruning_config_file" "./architectures.json"
-  # "--task_name" "long_term_forecast"
   "--is_training" 1
   "--root_path" "./dataset/USC/"
   "--checkpoints" "./checkpoints/"
@@ -53,7 +51,25 @@ FINAL_ARGS=(
     "${LOCAL_ARGS[@]}"
 ) 
 
-
+# operation script
 python -u run.py "${FINAL_ARGS[@]}" \
+  --batch_size 64 \
+  --train_epochs 100 \
+  --patience 8 \
   --pruning_factor 0.5 \
-  --pruning_epochs 3
+  --pruning_epochs 4 \
+  --pruning_id 2 \
+  --pruning_config_file ./architectures.json \
+  --pruning_directory ./pruning
+
+
+# test script
+# python -u run.py "${FINAL_ARGS[@]}" \
+#   --batch_size 256 \
+#   --train_epochs 20 \
+#   --patience 4 \
+#   --pruning_factor 0.5 \
+#   --pruning_epochs 3 \
+#   --pruning_id 2 \
+#   --pruning_config_file ./test_architectures.json \
+#   --pruning_directory ./pruning

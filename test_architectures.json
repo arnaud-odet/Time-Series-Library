@@ -11,13 +11,6 @@
         "d_model": 128,
         "d_layers": 1,
         "d_ff": 64,
-        "model": "Transformer2D"
-    },
-    {
-        "e_layers": 2,
-        "d_model": 128,
-        "d_layers": 1,
-        "d_ff": 64,
         "model": "Crossformer"
     },
     {
@@ -54,5 +47,12 @@
         "d_layers": 1,
         "d_ff": 64,
         "model": "LSTM"
+    },
+    {
+        "e_layers": 2,
+        "d_model": 128,
+        "d_layers": 1,
+        "d_ff": 64,
+        "model": "DLinear"
     }
 ]

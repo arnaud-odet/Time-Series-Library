@@ -104,6 +104,8 @@ if __name__ == '__main__':
     parser.add_argument('--pruning_factor', type=float, default=0.5, help='Pruning reduction factor')
     parser.add_argument('--pruning_directory', type=str, default='./pruning/', help='Directory to store pruning exp, results, and logs')
     parser.add_argument('--pruning_config_file', type=str, default=None, help='Config json file for pruning')
+    parser.add_argument('--pruning_id', type=int, default=1, help='Identifier of pruning experiment')
+    
     
     
     # optimization

@@ -163,6 +163,7 @@ dataset/
 checkpoints/
 results/
 pruning/
+pruning_0/
 result_long_term_forecast.txt
 result_anomaly_detection.txt
 scripts/augmentation/
