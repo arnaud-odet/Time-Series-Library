@@ -4,237 +4,1245 @@
         "d_model": 128,
         "d_layers": 1,
         "d_ff": 64,
-        "model": "Transformer2D"
+        "model": "Transformer"
     },
     {
         "e_layers": 2,
         "d_model": 128,
         "d_layers": 1,
         "d_ff": 128,
-        "model": "Transformer2D"
+        "model": "Transformer"
     },
     {
         "e_layers": 2,
         "d_model": 128,
         "d_layers": 1,
         "d_ff": 256,
-        "model": "Transformer2D"
-    },
-    {
-        "e_layers": 2,
-        "d_model": 128,
-        "d_layers": 2,
-        "d_ff": 64,
-        "model": "Transformer2D"
-    },
-    {
-        "e_layers": 2,
-        "d_model": 128,
-        "d_layers": 2,
-        "d_ff": 128,
-        "model": "Transformer2D"
-    },
-    {
-        "e_layers": 2,
-        "d_model": 128,
-        "d_layers": 2,
-        "d_ff": 256,
-        "model": "Transformer2D"
-    },
-    {
-        "e_layers": 2,
-        "d_model": 256,
-        "d_layers": 1,
-        "d_ff": 128,
-        "model": "Transformer2D"
-    },
-    {
-        "e_layers": 2,
-        "d_model": 256,
-        "d_layers": 1,
-        "d_ff": 256,
-        "model": "Transformer2D"
-    },
-    {
-        "e_layers": 2,
-        "d_model": 256,
-        "d_layers": 1,
-        "d_ff": 512,
-        "model": "Transformer2D"
-    },
-    {
-        "e_layers": 2,
-        "d_model": 256,
-        "d_layers": 2,
-        "d_ff": 128,
-        "model": "Transformer2D"
-    },
-    {
-        "e_layers": 2,
-        "d_model": 256,
-        "d_layers": 2,
-        "d_ff": 256,
-        "model": "Transformer2D"
-    },
-    {
-        "e_layers": 2,
-        "d_model": 256,
-        "d_layers": 2,
-        "d_ff": 512,
-        "model": "Transformer2D"
-    },
-    {
-        "e_layers": 3,
-        "d_model": 256,
-        "d_layers": 2,
-        "d_ff": 128,
-        "model": "Transformer2D"
-    },
-    {
-        "e_layers": 3,
-        "d_model": 256,
-        "d_layers": 2,
-        "d_ff": 256,
-        "model": "Transformer2D"
-    },
-    {
-        "e_layers": 3,
-        "d_model": 256,
-        "d_layers": 2,
-        "d_ff": 512,
-        "model": "Transformer2D"
-    },
-    {
-        "e_layers": 3,
-        "d_model": 256,
-        "d_layers": 3,
-        "d_ff": 128,
-        "model": "Transformer2D"
-    },
-    {
-        "e_layers": 3,
-        "d_model": 256,
-        "d_layers": 3,
-        "d_ff": 256,
-        "model": "Transformer2D"
-    },
-    {
-        "e_layers": 3,
-        "d_model": 256,
-        "d_layers": 3,
-        "d_ff": 512,
-        "model": "Transformer2D"
-    },
-    {
-        "e_layers": 3,
-        "d_model": 512,
-        "d_layers": 2,
-        "d_ff": 256,
-        "model": "Transformer2D"
-    },
-    {
-        "e_layers": 3,
-        "d_model": 512,
-        "d_layers": 2,
-        "d_ff": 512,
-        "model": "Transformer2D"
-    },
-    {
-        "e_layers": 3,
-        "d_model": 512,
-        "d_layers": 2,
-        "d_ff": 1024,
-        "model": "Transformer2D"
-    },
-    {
-        "e_layers": 3,
-        "d_model": 512,
-        "d_layers": 3,
-        "d_ff": 256,
-        "model": "Transformer2D"
-    },
-    {
-        "e_layers": 3,
-        "d_model": 512,
-        "d_layers": 3,
-        "d_ff": 512,
-        "model": "Transformer2D"
-    },
-    {
-        "e_layers": 3,
-        "d_model": 512,
-        "d_layers": 3,
-        "d_ff": 1024,
-        "model": "Transformer2D"
-    },
-    {
-        "e_layers": 4,
-        "d_model": 512,
-        "d_layers": 3,
-        "d_ff": 256,
-        "model": "Transformer2D"
-    },
-    {
-        "e_layers": 4,
-        "d_model": 512,
-        "d_layers": 3,
-        "d_ff": 512,
-        "model": "Transformer2D"
-    },
-    {
-        "e_layers": 4,
-        "d_model": 512,
-        "d_layers": 3,
-        "d_ff": 1024,
-        "model": "Transformer2D"
-    },
-    {
-        "e_layers": 4,
-        "d_model": 512,
-        "d_layers": 4,
-        "d_ff": 256,
-        "model": "Transformer2D"
-    },
-    {
-        "e_layers": 4,
-        "d_model": 512,
-        "d_layers": 4,
-        "d_ff": 512,
-        "model": "Transformer2D"
-    },
-    {
-        "e_layers": 4,
-        "d_model": 512,
-        "d_layers": 4,
-        "d_ff": 1024,
-        "model": "Transformer2D"
-    },
-    {
-        "e_layers": 2,
-        "d_model": 128,
-        "d_layers": 1,
-        "d_ff": 64,
-        "model": "LSTM"
-    },
-    {
-        "e_layers": 2,
-        "d_model": 128,
-        "d_layers": 1,
-        "d_ff": 128,
-        "model": "LSTM"
-    },
-    {
-        "e_layers": 2,
-        "d_model": 128,
-        "d_layers": 1,
-        "d_ff": 256,
-        "model": "LSTM"
+        "model": "Transformer"
     },
     {
         "e_layers": 2,
         "d_model": 128,
         "d_layers": 2,
         "d_ff": 64,
+        "model": "Transformer"
+    },
+    {
+        "e_layers": 2,
+        "d_model": 128,
+        "d_layers": 2,
+        "d_ff": 128,
+        "model": "Transformer"
+    },
+    {
+        "e_layers": 2,
+        "d_model": 128,
+        "d_layers": 2,
+        "d_ff": 256,
+        "model": "Transformer"
+    },
+    {
+        "e_layers": 2,
+        "d_model": 256,
+        "d_layers": 1,
+        "d_ff": 128,
+        "model": "Transformer"
+    },
+    {
+        "e_layers": 2,
+        "d_model": 256,
+        "d_layers": 1,
+        "d_ff": 256,
+        "model": "Transformer"
+    },
+    {
+        "e_layers": 2,
+        "d_model": 256,
+        "d_layers": 1,
+        "d_ff": 512,
+        "model": "Transformer"
+    },
+    {
+        "e_layers": 2,
+        "d_model": 256,
+        "d_layers": 2,
+        "d_ff": 128,
+        "model": "Transformer"
+    },
+    {
+        "e_layers": 2,
+        "d_model": 256,
+        "d_layers": 2,
+        "d_ff": 256,
+        "model": "Transformer"
+    },
+    {
+        "e_layers": 2,
+        "d_model": 256,
+        "d_layers": 2,
+        "d_ff": 512,
+        "model": "Transformer"
+    },
+    {
+        "e_layers": 3,
+        "d_model": 256,
+        "d_layers": 2,
+        "d_ff": 128,
+        "model": "Transformer"
+    },
+    {
+        "e_layers": 3,
+        "d_model": 256,
+        "d_layers": 2,
+        "d_ff": 256,
+        "model": "Transformer"
+    },
+    {
+        "e_layers": 3,
+        "d_model": 256,
+        "d_layers": 2,
+        "d_ff": 512,
+        "model": "Transformer"
+    },
+    {
+        "e_layers": 3,
+        "d_model": 256,
+        "d_layers": 3,
+        "d_ff": 128,
+        "model": "Transformer"
+    },
+    {
+        "e_layers": 3,
+        "d_model": 256,
+        "d_layers": 3,
+        "d_ff": 256,
+        "model": "Transformer"
+    },
+    {
+        "e_layers": 3,
+        "d_model": 256,
+        "d_layers": 3,
+        "d_ff": 512,
+        "model": "Transformer"
+    },
+    {
+        "e_layers": 3,
+        "d_model": 512,
+        "d_layers": 2,
+        "d_ff": 256,
+        "model": "Transformer"
+    },
+    {
+        "e_layers": 3,
+        "d_model": 512,
+        "d_layers": 2,
+        "d_ff": 512,
+        "model": "Transformer"
+    },
+    {
+        "e_layers": 3,
+        "d_model": 512,
+        "d_layers": 2,
+        "d_ff": 1024,
+        "model": "Transformer"
+    },
+    {
+        "e_layers": 3,
+        "d_model": 512,
+        "d_layers": 3,
+        "d_ff": 256,
+        "model": "Transformer"
+    },
+    {
+        "e_layers": 3,
+        "d_model": 512,
+        "d_layers": 3,
+        "d_ff": 512,
+        "model": "Transformer"
+    },
+    {
+        "e_layers": 3,
+        "d_model": 512,
+        "d_layers": 3,
+        "d_ff": 1024,
+        "model": "Transformer"
+    },
+    {
+        "e_layers": 4,
+        "d_model": 512,
+        "d_layers": 3,
+        "d_ff": 256,
+        "model": "Transformer"
+    },
+    {
+        "e_layers": 4,
+        "d_model": 512,
+        "d_layers": 3,
+        "d_ff": 512,
+        "model": "Transformer"
+    },
+    {
+        "e_layers": 4,
+        "d_model": 512,
+        "d_layers": 3,
+        "d_ff": 1024,
+        "model": "Transformer"
+    },
+    {
+        "e_layers": 4,
+        "d_model": 512,
+        "d_layers": 4,
+        "d_ff": 256,
+        "model": "Transformer"
+    },
+    {
+        "e_layers": 4,
+        "d_model": 512,
+        "d_layers": 4,
+        "d_ff": 512,
+        "model": "Transformer"
+    },
+    {
+        "e_layers": 4,
+        "d_model": 512,
+        "d_layers": 4,
+        "d_ff": 1024,
+        "model": "Transformer"
+    },
+    {
+        "e_layers": 2,
+        "d_model": 128,
+        "d_layers": 1,
+        "d_ff": 64,
+        "model": "Crossformer"
+    },
+    {
+        "e_layers": 2,
+        "d_model": 128,
+        "d_layers": 1,
+        "d_ff": 128,
+        "model": "Crossformer"
+    },
+    {
+        "e_layers": 2,
+        "d_model": 128,
+        "d_layers": 1,
+        "d_ff": 256,
+        "model": "Crossformer"
+    },
+    {
+        "e_layers": 2,
+        "d_model": 128,
+        "d_layers": 2,
+        "d_ff": 64,
+        "model": "Crossformer"
+    },
+    {
+        "e_layers": 2,
+        "d_model": 128,
+        "d_layers": 2,
+        "d_ff": 128,
+        "model": "Crossformer"
+    },
+    {
+        "e_layers": 2,
+        "d_model": 128,
+        "d_layers": 2,
+        "d_ff": 256,
+        "model": "Crossformer"
+    },
+    {
+        "e_layers": 2,
+        "d_model": 256,
+        "d_layers": 1,
+        "d_ff": 128,
+        "model": "Crossformer"
+    },
+    {
+        "e_layers": 2,
+        "d_model": 256,
+        "d_layers": 1,
+        "d_ff": 256,
+        "model": "Crossformer"
+    },
+    {
+        "e_layers": 2,
+        "d_model": 256,
+        "d_layers": 1,
+        "d_ff": 512,
+        "model": "Crossformer"
+    },
+    {
+        "e_layers": 2,
+        "d_model": 256,
+        "d_layers": 2,
+        "d_ff": 128,
+        "model": "Crossformer"
+    },
+    {
+        "e_layers": 2,
+        "d_model": 256,
+        "d_layers": 2,
+        "d_ff": 256,
+        "model": "Crossformer"
+    },
+    {
+        "e_layers": 2,
+        "d_model": 256,
+        "d_layers": 2,
+        "d_ff": 512,
+        "model": "Crossformer"
+    },
+    {
+        "e_layers": 3,
+        "d_model": 256,
+        "d_layers": 2,
+        "d_ff": 128,
+        "model": "Crossformer"
+    },
+    {
+        "e_layers": 3,
+        "d_model": 256,
+        "d_layers": 2,
+        "d_ff": 256,
+        "model": "Crossformer"
+    },
+    {
+        "e_layers": 3,
+        "d_model": 256,
+        "d_layers": 2,
+        "d_ff": 512,
+        "model": "Crossformer"
+    },
+    {
+        "e_layers": 3,
+        "d_model": 256,
+        "d_layers": 3,
+        "d_ff": 128,
+        "model": "Crossformer"
+    },
+    {
+        "e_layers": 3,
+        "d_model": 256,
+        "d_layers": 3,
+        "d_ff": 256,
+        "model": "Crossformer"
+    },
+    {
+        "e_layers": 3,
+        "d_model": 256,
+        "d_layers": 3,
+        "d_ff": 512,
+        "model": "Crossformer"
+    },
+    {
+        "e_layers": 3,
+        "d_model": 512,
+        "d_layers": 2,
+        "d_ff": 256,
+        "model": "Crossformer"
+    },
+    {
+        "e_layers": 3,
+        "d_model": 512,
+        "d_layers": 2,
+        "d_ff": 512,
+        "model": "Crossformer"
+    },
+    {
+        "e_layers": 3,
+        "d_model": 512,
+        "d_layers": 2,
+        "d_ff": 1024,
+        "model": "Crossformer"
+    },
+    {
+        "e_layers": 3,
+        "d_model": 512,
+        "d_layers": 3,
+        "d_ff": 256,
+        "model": "Crossformer"
+    },
+    {
+        "e_layers": 3,
+        "d_model": 512,
+        "d_layers": 3,
+        "d_ff": 512,
+        "model": "Crossformer"
+    },
+    {
+        "e_layers": 3,
+        "d_model": 512,
+        "d_layers": 3,
+        "d_ff": 1024,
+        "model": "Crossformer"
+    },
+    {
+        "e_layers": 4,
+        "d_model": 512,
+        "d_layers": 3,
+        "d_ff": 256,
+        "model": "Crossformer"
+    },
+    {
+        "e_layers": 4,
+        "d_model": 512,
+        "d_layers": 3,
+        "d_ff": 512,
+        "model": "Crossformer"
+    },
+    {
+        "e_layers": 4,
+        "d_model": 512,
+        "d_layers": 3,
+        "d_ff": 1024,
+        "model": "Crossformer"
+    },
+    {
+        "e_layers": 4,
+        "d_model": 512,
+        "d_layers": 4,
+        "d_ff": 256,
+        "model": "Crossformer"
+    },
+    {
+        "e_layers": 4,
+        "d_model": 512,
+        "d_layers": 4,
+        "d_ff": 512,
+        "model": "Crossformer"
+    },
+    {
+        "e_layers": 4,
+        "d_model": 512,
+        "d_layers": 4,
+        "d_ff": 1024,
+        "model": "Crossformer"
+    },
+    {
+        "e_layers": 2,
+        "d_model": 128,
+        "d_layers": 1,
+        "d_ff": 64,
+        "model": "Pyraformer"
+    },
+    {
+        "e_layers": 2,
+        "d_model": 128,
+        "d_layers": 1,
+        "d_ff": 128,
+        "model": "Pyraformer"
+    },
+    {
+        "e_layers": 2,
+        "d_model": 128,
+        "d_layers": 1,
+        "d_ff": 256,
+        "model": "Pyraformer"
+    },
+    {
+        "e_layers": 2,
+        "d_model": 128,
+        "d_layers": 2,
+        "d_ff": 64,
+        "model": "Pyraformer"
+    },
+    {
+        "e_layers": 2,
+        "d_model": 128,
+        "d_layers": 2,
+        "d_ff": 128,
+        "model": "Pyraformer"
+    },
+    {
+        "e_layers": 2,
+        "d_model": 128,
+        "d_layers": 2,
+        "d_ff": 256,
+        "model": "Pyraformer"
+    },
+    {
+        "e_layers": 2,
+        "d_model": 256,
+        "d_layers": 1,
+        "d_ff": 128,
+        "model": "Pyraformer"
+    },
+    {
+        "e_layers": 2,
+        "d_model": 256,
+        "d_layers": 1,
+        "d_ff": 256,
+        "model": "Pyraformer"
+    },
+    {
+        "e_layers": 2,
+        "d_model": 256,
+        "d_layers": 1,
+        "d_ff": 512,
+        "model": "Pyraformer"
+    },
+    {
+        "e_layers": 2,
+        "d_model": 256,
+        "d_layers": 2,
+        "d_ff": 128,
+        "model": "Pyraformer"
+    },
+    {
+        "e_layers": 2,
+        "d_model": 256,
+        "d_layers": 2,
+        "d_ff": 256,
+        "model": "Pyraformer"
+    },
+    {
+        "e_layers": 2,
+        "d_model": 256,
+        "d_layers": 2,
+        "d_ff": 512,
+        "model": "Pyraformer"
+    },
+    {
+        "e_layers": 3,
+        "d_model": 256,
+        "d_layers": 2,
+        "d_ff": 128,
+        "model": "Pyraformer"
+    },
+    {
+        "e_layers": 3,
+        "d_model": 256,
+        "d_layers": 2,
+        "d_ff": 256,
+        "model": "Pyraformer"
+    },
+    {
+        "e_layers": 3,
+        "d_model": 256,
+        "d_layers": 2,
+        "d_ff": 512,
+        "model": "Pyraformer"
+    },
+    {
+        "e_layers": 3,
+        "d_model": 256,
+        "d_layers": 3,
+        "d_ff": 128,
+        "model": "Pyraformer"
+    },
+    {
+        "e_layers": 3,
+        "d_model": 256,
+        "d_layers": 3,
+        "d_ff": 256,
+        "model": "Pyraformer"
+    },
+    {
+        "e_layers": 3,
+        "d_model": 256,
+        "d_layers": 3,
+        "d_ff": 512,
+        "model": "Pyraformer"
+    },
+    {
+        "e_layers": 3,
+        "d_model": 512,
+        "d_layers": 2,
+        "d_ff": 256,
+        "model": "Pyraformer"
+    },
+    {
+        "e_layers": 3,
+        "d_model": 512,
+        "d_layers": 2,
+        "d_ff": 512,
+        "model": "Pyraformer"
+    },
+    {
+        "e_layers": 3,
+        "d_model": 512,
+        "d_layers": 2,
+        "d_ff": 1024,
+        "model": "Pyraformer"
+    },
+    {
+        "e_layers": 3,
+        "d_model": 512,
+        "d_layers": 3,
+        "d_ff": 256,
+        "model": "Pyraformer"
+    },
+    {
+        "e_layers": 3,
+        "d_model": 512,
+        "d_layers": 3,
+        "d_ff": 512,
+        "model": "Pyraformer"
+    },
+    {
+        "e_layers": 3,
+        "d_model": 512,
+        "d_layers": 3,
+        "d_ff": 1024,
+        "model": "Pyraformer"
+    },
+    {
+        "e_layers": 4,
+        "d_model": 512,
+        "d_layers": 3,
+        "d_ff": 256,
+        "model": "Pyraformer"
+    },
+    {
+        "e_layers": 4,
+        "d_model": 512,
+        "d_layers": 3,
+        "d_ff": 512,
+        "model": "Pyraformer"
+    },
+    {
+        "e_layers": 4,
+        "d_model": 512,
+        "d_layers": 3,
+        "d_ff": 1024,
+        "model": "Pyraformer"
+    },
+    {
+        "e_layers": 4,
+        "d_model": 512,
+        "d_layers": 4,
+        "d_ff": 256,
+        "model": "Pyraformer"
+    },
+    {
+        "e_layers": 4,
+        "d_model": 512,
+        "d_layers": 4,
+        "d_ff": 512,
+        "model": "Pyraformer"
+    },
+    {
+        "e_layers": 4,
+        "d_model": 512,
+        "d_layers": 4,
+        "d_ff": 1024,
+        "model": "Pyraformer"
+    },
+    {
+        "e_layers": 2,
+        "d_model": 128,
+        "d_layers": 1,
+        "d_ff": 64,
+        "model": "PatchTST"
+    },
+    {
+        "e_layers": 2,
+        "d_model": 128,
+        "d_layers": 1,
+        "d_ff": 128,
+        "model": "PatchTST"
+    },
+    {
+        "e_layers": 2,
+        "d_model": 128,
+        "d_layers": 1,
+        "d_ff": 256,
+        "model": "PatchTST"
+    },
+    {
+        "e_layers": 2,
+        "d_model": 128,
+        "d_layers": 2,
+        "d_ff": 64,
+        "model": "PatchTST"
+    },
+    {
+        "e_layers": 2,
+        "d_model": 128,
+        "d_layers": 2,
+        "d_ff": 128,
+        "model": "PatchTST"
+    },
+    {
+        "e_layers": 2,
+        "d_model": 128,
+        "d_layers": 2,
+        "d_ff": 256,
+        "model": "PatchTST"
+    },
+    {
+        "e_layers": 2,
+        "d_model": 256,
+        "d_layers": 1,
+        "d_ff": 128,
+        "model": "PatchTST"
+    },
+    {
+        "e_layers": 2,
+        "d_model": 256,
+        "d_layers": 1,
+        "d_ff": 256,
+        "model": "PatchTST"
+    },
+    {
+        "e_layers": 2,
+        "d_model": 256,
+        "d_layers": 1,
+        "d_ff": 512,
+        "model": "PatchTST"
+    },
+    {
+        "e_layers": 2,
+        "d_model": 256,
+        "d_layers": 2,
+        "d_ff": 128,
+        "model": "PatchTST"
+    },
+    {
+        "e_layers": 2,
+        "d_model": 256,
+        "d_layers": 2,
+        "d_ff": 256,
+        "model": "PatchTST"
+    },
+    {
+        "e_layers": 2,
+        "d_model": 256,
+        "d_layers": 2,
+        "d_ff": 512,
+        "model": "PatchTST"
+    },
+    {
+        "e_layers": 3,
+        "d_model": 256,
+        "d_layers": 2,
+        "d_ff": 128,
+        "model": "PatchTST"
+    },
+    {
+        "e_layers": 3,
+        "d_model": 256,
+        "d_layers": 2,
+        "d_ff": 256,
+        "model": "PatchTST"
+    },
+    {
+        "e_layers": 3,
+        "d_model": 256,
+        "d_layers": 2,
+        "d_ff": 512,
+        "model": "PatchTST"
+    },
+    {
+        "e_layers": 3,
+        "d_model": 256,
+        "d_layers": 3,
+        "d_ff": 128,
+        "model": "PatchTST"
+    },
+    {
+        "e_layers": 3,
+        "d_model": 256,
+        "d_layers": 3,
+        "d_ff": 256,
+        "model": "PatchTST"
+    },
+    {
+        "e_layers": 3,
+        "d_model": 256,
+        "d_layers": 3,
+        "d_ff": 512,
+        "model": "PatchTST"
+    },
+    {
+        "e_layers": 3,
+        "d_model": 512,
+        "d_layers": 2,
+        "d_ff": 256,
+        "model": "PatchTST"
+    },
+    {
+        "e_layers": 3,
+        "d_model": 512,
+        "d_layers": 2,
+        "d_ff": 512,
+        "model": "PatchTST"
+    },
+    {
+        "e_layers": 3,
+        "d_model": 512,
+        "d_layers": 2,
+        "d_ff": 1024,
+        "model": "PatchTST"
+    },
+    {
+        "e_layers": 3,
+        "d_model": 512,
+        "d_layers": 3,
+        "d_ff": 256,
+        "model": "PatchTST"
+    },
+    {
+        "e_layers": 3,
+        "d_model": 512,
+        "d_layers": 3,
+        "d_ff": 512,
+        "model": "PatchTST"
+    },
+    {
+        "e_layers": 3,
+        "d_model": 512,
+        "d_layers": 3,
+        "d_ff": 1024,
+        "model": "PatchTST"
+    },
+    {
+        "e_layers": 4,
+        "d_model": 512,
+        "d_layers": 3,
+        "d_ff": 256,
+        "model": "PatchTST"
+    },
+    {
+        "e_layers": 4,
+        "d_model": 512,
+        "d_layers": 3,
+        "d_ff": 512,
+        "model": "PatchTST"
+    },
+    {
+        "e_layers": 4,
+        "d_model": 512,
+        "d_layers": 3,
+        "d_ff": 1024,
+        "model": "PatchTST"
+    },
+    {
+        "e_layers": 4,
+        "d_model": 512,
+        "d_layers": 4,
+        "d_ff": 256,
+        "model": "PatchTST"
+    },
+    {
+        "e_layers": 4,
+        "d_model": 512,
+        "d_layers": 4,
+        "d_ff": 512,
+        "model": "PatchTST"
+    },
+    {
+        "e_layers": 4,
+        "d_model": 512,
+        "d_layers": 4,
+        "d_ff": 1024,
+        "model": "PatchTST"
+    },
+    {
+        "e_layers": 2,
+        "d_model": 256,
+        "d_layers": 1,
+        "d_ff": 128,
+        "model": "Nonstationary_Transformer"
+    },
+    {
+        "e_layers": 2,
+        "d_model": 256,
+        "d_layers": 1,
+        "d_ff": 256,
+        "model": "Nonstationary_Transformer"
+    },
+    {
+        "e_layers": 2,
+        "d_model": 256,
+        "d_layers": 1,
+        "d_ff": 512,
+        "model": "Nonstationary_Transformer"
+    },
+    {
+        "e_layers": 2,
+        "d_model": 256,
+        "d_layers": 2,
+        "d_ff": 128,
+        "model": "Nonstationary_Transformer"
+    },
+    {
+        "e_layers": 2,
+        "d_model": 256,
+        "d_layers": 2,
+        "d_ff": 256,
+        "model": "Nonstationary_Transformer"
+    },
+    {
+        "e_layers": 2,
+        "d_model": 256,
+        "d_layers": 2,
+        "d_ff": 512,
+        "model": "Nonstationary_Transformer"
+    },
+    {
+        "e_layers": 3,
+        "d_model": 256,
+        "d_layers": 2,
+        "d_ff": 128,
+        "model": "Nonstationary_Transformer"
+    },
+    {
+        "e_layers": 3,
+        "d_model": 256,
+        "d_layers": 2,
+        "d_ff": 256,
+        "model": "Nonstationary_Transformer"
+    },
+    {
+        "e_layers": 3,
+        "d_model": 256,
+        "d_layers": 2,
+        "d_ff": 512,
+        "model": "Nonstationary_Transformer"
+    },
+    {
+        "e_layers": 3,
+        "d_model": 256,
+        "d_layers": 3,
+        "d_ff": 128,
+        "model": "Nonstationary_Transformer"
+    },
+    {
+        "e_layers": 3,
+        "d_model": 256,
+        "d_layers": 3,
+        "d_ff": 256,
+        "model": "Nonstationary_Transformer"
+    },
+    {
+        "e_layers": 3,
+        "d_model": 256,
+        "d_layers": 3,
+        "d_ff": 512,
+        "model": "Nonstationary_Transformer"
+    },
+    {
+        "e_layers": 3,
+        "d_model": 512,
+        "d_layers": 2,
+        "d_ff": 256,
+        "model": "Nonstationary_Transformer"
+    },
+    {
+        "e_layers": 3,
+        "d_model": 512,
+        "d_layers": 2,
+        "d_ff": 512,
+        "model": "Nonstationary_Transformer"
+    },
+    {
+        "e_layers": 3,
+        "d_model": 512,
+        "d_layers": 2,
+        "d_ff": 1024,
+        "model": "Nonstationary_Transformer"
+    },
+    {
+        "e_layers": 3,
+        "d_model": 512,
+        "d_layers": 3,
+        "d_ff": 256,
+        "model": "Nonstationary_Transformer"
+    },
+    {
+        "e_layers": 3,
+        "d_model": 512,
+        "d_layers": 3,
+        "d_ff": 512,
+        "model": "Nonstationary_Transformer"
+    },
+    {
+        "e_layers": 3,
+        "d_model": 512,
+        "d_layers": 3,
+        "d_ff": 1024,
+        "model": "Nonstationary_Transformer"
+    },
+    {
+        "e_layers": 4,
+        "d_model": 512,
+        "d_layers": 3,
+        "d_ff": 256,
+        "model": "Nonstationary_Transformer"
+    },
+    {
+        "e_layers": 4,
+        "d_model": 512,
+        "d_layers": 3,
+        "d_ff": 512,
+        "model": "Nonstationary_Transformer"
+    },
+    {
+        "e_layers": 4,
+        "d_model": 512,
+        "d_layers": 3,
+        "d_ff": 1024,
+        "model": "Nonstationary_Transformer"
+    },
+    {
+        "e_layers": 4,
+        "d_model": 512,
+        "d_layers": 4,
+        "d_ff": 256,
+        "model": "Nonstationary_Transformer"
+    },
+    {
+        "e_layers": 4,
+        "d_model": 512,
+        "d_layers": 4,
+        "d_ff": 512,
+        "model": "Nonstationary_Transformer"
+    },
+    {
+        "e_layers": 4,
+        "d_model": 512,
+        "d_layers": 4,
+        "d_ff": 1024,
+        "model": "Nonstationary_Transformer"
+    },
+    {
+        "e_layers": 2,
+        "d_model": 128,
+        "d_layers": 1,
+        "d_ff": 64,
+        "model": "iTransformer"
+    },
+    {
+        "e_layers": 2,
+        "d_model": 128,
+        "d_layers": 1,
+        "d_ff": 128,
+        "model": "iTransformer"
+    },
+    {
+        "e_layers": 2,
+        "d_model": 128,
+        "d_layers": 1,
+        "d_ff": 256,
+        "model": "iTransformer"
+    },
+    {
+        "e_layers": 2,
+        "d_model": 128,
+        "d_layers": 2,
+        "d_ff": 64,
+        "model": "iTransformer"
+    },
+    {
+        "e_layers": 2,
+        "d_model": 128,
+        "d_layers": 2,
+        "d_ff": 128,
+        "model": "iTransformer"
+    },
+    {
+        "e_layers": 2,
+        "d_model": 128,
+        "d_layers": 2,
+        "d_ff": 256,
+        "model": "iTransformer"
+    },
+    {
+        "e_layers": 2,
+        "d_model": 256,
+        "d_layers": 1,
+        "d_ff": 128,
+        "model": "iTransformer"
+    },
+    {
+        "e_layers": 2,
+        "d_model": 256,
+        "d_layers": 1,
+        "d_ff": 256,
+        "model": "iTransformer"
+    },
+    {
+        "e_layers": 2,
+        "d_model": 256,
+        "d_layers": 1,
+        "d_ff": 512,
+        "model": "iTransformer"
+    },
+    {
+        "e_layers": 2,
+        "d_model": 256,
+        "d_layers": 2,
+        "d_ff": 128,
+        "model": "iTransformer"
+    },
+    {
+        "e_layers": 2,
+        "d_model": 256,
+        "d_layers": 2,
+        "d_ff": 256,
+        "model": "iTransformer"
+    },
+    {
+        "e_layers": 2,
+        "d_model": 256,
+        "d_layers": 2,
+        "d_ff": 512,
+        "model": "iTransformer"
+    },
+    {
+        "e_layers": 3,
+        "d_model": 256,
+        "d_layers": 2,
+        "d_ff": 128,
+        "model": "iTransformer"
+    },
+    {
+        "e_layers": 3,
+        "d_model": 256,
+        "d_layers": 2,
+        "d_ff": 256,
+        "model": "iTransformer"
+    },
+    {
+        "e_layers": 3,
+        "d_model": 256,
+        "d_layers": 2,
+        "d_ff": 512,
+        "model": "iTransformer"
+    },
+    {
+        "e_layers": 3,
+        "d_model": 256,
+        "d_layers": 3,
+        "d_ff": 128,
+        "model": "iTransformer"
+    },
+    {
+        "e_layers": 3,
+        "d_model": 256,
+        "d_layers": 3,
+        "d_ff": 256,
+        "model": "iTransformer"
+    },
+    {
+        "e_layers": 3,
+        "d_model": 256,
+        "d_layers": 3,
+        "d_ff": 512,
+        "model": "iTransformer"
+    },
+    {
+        "e_layers": 3,
+        "d_model": 512,
+        "d_layers": 2,
+        "d_ff": 256,
+        "model": "iTransformer"
+    },
+    {
+        "e_layers": 3,
+        "d_model": 512,
+        "d_layers": 2,
+        "d_ff": 512,
+        "model": "iTransformer"
+    },
+    {
+        "e_layers": 3,
+        "d_model": 512,
+        "d_layers": 2,
+        "d_ff": 1024,
+        "model": "iTransformer"
+    },
+    {
+        "e_layers": 3,
+        "d_model": 512,
+        "d_layers": 3,
+        "d_ff": 256,
+        "model": "iTransformer"
+    },
+    {
+        "e_layers": 3,
+        "d_model": 512,
+        "d_layers": 3,
+        "d_ff": 512,
+        "model": "iTransformer"
+    },
+    {
+        "e_layers": 3,
+        "d_model": 512,
+        "d_layers": 3,
+        "d_ff": 1024,
+        "model": "iTransformer"
+    },
+    {
+        "e_layers": 4,
+        "d_model": 512,
+        "d_layers": 3,
+        "d_ff": 256,
+        "model": "iTransformer"
+    },
+    {
+        "e_layers": 4,
+        "d_model": 512,
+        "d_layers": 3,
+        "d_ff": 512,
+        "model": "iTransformer"
+    },
+    {
+        "e_layers": 4,
+        "d_model": 512,
+        "d_layers": 3,
+        "d_ff": 1024,
+        "model": "iTransformer"
+    },
+    {
+        "e_layers": 4,
+        "d_model": 512,
+        "d_layers": 4,
+        "d_ff": 256,
+        "model": "iTransformer"
+    },
+    {
+        "e_layers": 4,
+        "d_model": 512,
+        "d_layers": 4,
+        "d_ff": 512,
+        "model": "iTransformer"
+    },
+    {
+        "e_layers": 4,
+        "d_model": 512,
+        "d_layers": 4,
+        "d_ff": 1024,
+        "model": "iTransformer"
+    },
+    {
+        "e_layers": 2,
+        "d_model": 128,
+        "d_layers": 1,
+        "d_ff": 64,
+        "model": "LSTM"
+    },
+    {
+        "e_layers": 2,
+        "d_model": 128,
+        "d_layers": 1,
+        "d_ff": 128,
+        "model": "LSTM"
+    },
+    {
+        "e_layers": 2,
+        "d_model": 128,
+        "d_layers": 1,
+        "d_ff": 256,
+        "model": "LSTM"
+    },
+    {
+        "e_layers": 2,
+        "d_model": 128,
+        "d_layers": 2,
+        "d_ff": 64,
         "model": "LSTM"
     },
     {
@@ -418,5 +1426,12 @@
         "d_layers": 4,
         "d_ff": 1024,
         "model": "LSTM"
+    },
+    {
+        "e_layers": 2,
+        "d_model": 128,
+        "d_layers": 1,
+        "d_ff": 64,
+        "model": "DLinear"
     }
 ]

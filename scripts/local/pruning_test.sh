@@ -29,10 +29,6 @@ LOCAL_ARGS=(
   "--patience" 6
   "--optimizer" "adamw"
   "--wd" 0.01 # Will be overwritten
-  "--features" "MS"
-  "--enc_in" 61
-  "--dec_in" 61
-  "--c_out" 61
   "--e_layers" 2 # Will be overwritten
   "--model" "Transformer" # Will be overwritten
   "--d_model" 512 # Will be overwritten
@@ -58,10 +54,13 @@ python -u run.py "${FINAL_ARGS[@]}" \
   --patience 8 \
   --pruning_factor 0.5 \
   --pruning_epochs 4 \
-  --pruning_id 2 \
+  --pruning_id 3 \
   --pruning_config_file ./architectures.json \
-  --pruning_directory ./pruning
-
+  --pruning_directory ./pruning \
+  --features S \
+  --enc_in 1 \
+  --dec_in 1 \
+  --c_out 1 \
 
 # test script
 # python -u run.py "${FINAL_ARGS[@]}" \

@@ -15,6 +15,7 @@ from pathlib import Path
 import pandas as pd
 import json
 import csv
+import math
 
 warnings.filterwarnings('ignore')
 
@@ -541,49 +542,49 @@ class Pruning(Exp_Basic):
                                 epoch = self.pruning_epochs * iter + k 
                                 if exp['alive'] and epoch > exp['restart_epoch']:
                                     last_epoch =max(last_epoch, epoch)
-                                    # try :
-                                    train_loss = self._training_epoch(model, model_optim, scaler, train_loader, criterion, epoch = epoch)                                    
-                                    exp['train_loss'] = np.append(exp['train_loss'], train_loss)
-                                    val_loss = self._validation_step(model, val_loader, criterion)
-                                    exp['val_loss'] = np.append(exp['val_loss'], val_loss)
-                                    
-                                    if val_loss == np.nan or train_loss == np.nan :
-                                        self._kill_exp(exp, reason = 'model_divergence')                                        
-                                    
-                                    # EarlyStopping logic
-                                    self._save_model(model_id = exp['id'], model = model, optimizer = model_optim, scaler= scaler, reason = 'last')
-                                    if val_loss < exp['best_score']:
-                                        # Save best_model 
-                                        exp['best_score'] = val_loss
-                                        self._save_model(model_id = exp['id'], model = model, optimizer = model_optim, reason = 'best')                            
-                                        exp['early_stopping_counter'] = 0
-                                    else :
-                                        exp['early_stopping_counter'] += 1
-                                    
-                                    if show_model :
-                                        exp_str = "  Exp id : {} | model : {:>26}".format(exp['id'],exp['hp']['model'])
-                                        show_model = False
-                                    else :
-                                        exp_str = " " * 53 
-                                    
-                                    print("{} | epoch {:3} : train loss = {:.2e}, val loss = {:.2e} | earlystopping counter {}/{} | learning_rate = {:.2e} ".format(
-                                            exp_str,
-                                            epoch,
-                                            train_loss,
-                                            val_loss,
-                                            exp['early_stopping_counter'],
-                                            self.args.patience,
-                                            model_optim.param_groups[0]['lr']
-                                            ))
-                                    if exp['early_stopping_counter'] >= self.args.patience :
-                                        self._kill_exp(exp, reason = 'early_stopping')
-                                    # except :
-                                    #     # In case the above fails, kill the exp
-                                    #     self._kill_exp(exp, reason = 'training_failure')
-                                    #     # Keeping the last best score, which is set very high at startup
-                                    #     val_loss = exp['best_score']
-                                    #     exp['train_loss'] = np.append(exp['train_loss'], exp['best_score'])
-                                    #     exp['val_loss'] = np.append(exp['val_loss'], exp['best_score'])                                
+                                    try :
+                                        train_loss = self._training_epoch(model, model_optim, scaler, train_loader, criterion, epoch = epoch)                                    
+                                        exp['train_loss'] = np.append(exp['train_loss'], train_loss)
+                                        val_loss = self._validation_step(model, val_loader, criterion)
+                                        exp['val_loss'] = np.append(exp['val_loss'], val_loss)
+                                        
+                                        if math.isnan(val_loss) or math.isnan(train_loss) :
+                                            self._kill_exp(exp, reason = 'model_divergence')                                        
+                                        
+                                        # EarlyStopping logic
+                                        self._save_model(model_id = exp['id'], model = model, optimizer = model_optim, scaler= scaler, reason = 'last')
+                                        if val_loss < exp['best_score']:
+                                            # Save best_model 
+                                            exp['best_score'] = val_loss
+                                            self._save_model(model_id = exp['id'], model = model, optimizer = model_optim, reason = 'best')                            
+                                            exp['early_stopping_counter'] = 0
+                                        else :
+                                            exp['early_stopping_counter'] += 1
+                                        
+                                        if show_model :
+                                            exp_str = "  Exp id : {} | model : {:>26}".format(exp['id'],exp['hp']['model'])
+                                            show_model = False
+                                        else :
+                                            exp_str = " " * 53 
+                                        
+                                        print("{} | epoch {:3} : train loss = {:.2e}, val loss = {:.2e} | earlystopping counter {}/{} | learning_rate = {:.2e} ".format(
+                                                exp_str,
+                                                epoch,
+                                                train_loss,
+                                                val_loss,
+                                                exp['early_stopping_counter'],
+                                                self.args.patience,
+                                                model_optim.param_groups[0]['lr']
+                                                ))
+                                        if exp['early_stopping_counter'] >= self.args.patience :
+                                            self._kill_exp(exp, reason = 'early_stopping')
+                                    except :
+                                        # In case the above fails, kill the exp
+                                        self._kill_exp(exp, reason = 'training_failure')
+                                        # Keeping the last best score, which is set very high at startup
+                                        val_loss = exp['best_score']
+                                        exp['train_loss'] = np.append(exp['train_loss'], exp['best_score'])
+                                        exp['val_loss'] = np.append(exp['val_loss'], exp['best_score'])                                
                                     
                                     self._log_training(exp, epoch= epoch)                                
                                 elif exp['alive'] and epoch <= exp['restart_epoch']:
@@ -698,7 +699,7 @@ class Pruning(Exp_Basic):
             test_exp = True
             # Selecting exps to test
             if not test_pruned_exps :
-                if exp['death'] == 'pruning' or exp['death'] == 'training_failure' :
+                if exp['death'] == 'pruning' or exp['death'] == 'training_failure' or exp['death'] == 'model_divergence':
                     test_exp = False
 
             if test_exp :
