@@ -71,10 +71,9 @@ class BaselineScorer:
             bls += self.score_baseline(self.args, th,th)
         self.bls = pd.DataFrame(bls)
         self.bls = self.bls[['model', 'features', 'time', self.metric]].rename(columns = {self.metric : 'mean'})
-        self.bls['std'] = 0
-        self.bls['run'] = 'n.a.'
-        self.bls['arch'] = 'n.a.'
-        self.bls = self.bls.pivot(index = ['model','features'], columns = 'time', values= ['mean', 'std']).swaplevel(0,1,axis = 1).sort_index(axis = 1)  
+        # self.bls = self.bls.pivot(index = ['model','features'], columns = 'time', values= 'mean')  
+        # ordered_cols = [f"{th}-{th}" for th in self.ths]
+        # self. bls = self.bls[ordered_cols]
 
 class ResultReader:
     
