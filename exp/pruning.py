@@ -44,12 +44,13 @@ class Pruning(Exp_Basic):
         self.pruning_factor = args.pruning_factor
         self.model_registry = {}
         self.pruning_config_file = args.pruning_config_file
-        with open(self.pruning_config_file) as f:
-            experiments = json.load(f)
-        self.exps = self._build_exps(experiments)
-        self.n_exp_alive = len(self.exps)
-        self.print_args() 
-        self._resume()
+        if args.is_training :
+            with open(self.pruning_config_file) as f:
+                experiments = json.load(f)
+            self.exps = self._build_exps(experiments)
+            self.n_exp_alive = len(self.exps)
+            self.print_args() 
+            self._resume()
         
     def print_args(self):
         print("\033[1m" + "Basic Config" + "\033[0m")
@@ -211,8 +212,8 @@ class Pruning(Exp_Basic):
             scaler = torch.cuda.amp.GradScaler()
         return model, model_optim, scaler
 
-    def _get_data(self, flag):
-        data_set, data_loader = data_provider(self.args, flag)
+    def _get_data(self, args, flag):
+        data_set, data_loader = data_provider(args, flag)
         return data_set, data_loader
 
     def _select_optimizer(self, model):
@@ -672,8 +673,8 @@ class Pruning(Exp_Basic):
     def train(self, setting=None):
 
         print(">>> TRAINING <<<")
-        train_data, train_loader = self._get_data(flag='train')
-        val_data, val_loader = self._get_data(flag='val')
+        train_data, train_loader = self._get_data(self.args, flag='train')
+        val_data, val_loader = self._get_data(self.args, flag='val')
         criterion = self._select_criterion()
        
         last_alive_exp, last_epoch, start_time = self._pruning_loop(train_loader=train_loader, val_loader=val_loader, criterion=criterion)
@@ -693,7 +694,7 @@ class Pruning(Exp_Basic):
     def test(self, setting, test_pruned_exps:bool=False):
         
         print(">>> TESTING <<<")
-        test_data, test_loader = self._get_data(flag='test')
+        test_data, test_loader = self._get_data(self.args, flag='test')
  
         for exp in self.exps:
             test_exp = True
@@ -785,3 +786,129 @@ class Pruning(Exp_Basic):
                 self._log_exp(exp, log_type= 'test' , metrics=metrics)
                 # log(metrics=metrics, args = self.args)
                 
+    def test_selected_experiments(self, exps_df_path = './pruning/best_exps.csv'):
+        edf = pd.read_csv(exps_df_path, index_col = 0)
+        log_filepath = self.path/'top_exps'/'results.csv'
+        if os.path.exists(log_filepath):
+            ldf = pd.read_csv(log_filepath, index_col = 0)
+        else :
+            ldf = None
+        test_args = copy.deepcopy(self.args)
+        setattr(test_args, 'task_name', 'long_term_forecast')                    
+        for s in edf['seq_len'].unique():
+            s_edf = edf[edf['seq_len']==s]
+            setattr(test_args, 'seq_len', s)
+            setattr(test_args, 'label_len', int(s//2))
+            for p in s_edf['pred_len'].unique() :
+                setattr(test_args, 'pred_len', p)
+                for f in s_edf['features'].unique():
+                    setattr(test_args, 'features', f)                
+                    print(f"  Processing time horizon {s}-{p} - {f}")
+                    thdf = s_edf[(s_edf['pred_len'] == p) & (s_edf['features'] == f)]
+                    test_data, test_loader = self._get_data(test_args, flag='test')
+                    for model_id, model_name in zip(thdf.index, thdf['model']):
+                        setattr(test_args, 'model', model_name)
+                        if ldf is not None and model_id in ldf.index :
+                            # Skipping the model as it is already registrered
+                            print(f"    Skipping testing of {model_id} : already present in logs.")
+                            model = None
+                        else :
+                            # Loading model 
+                            model_dir = Path(self.path) / 'top_exps' / model_id
+                            checkpoint_path = os.path.join(model_dir, "best.pt")
+                            if not os.path.exists(checkpoint_path):
+                                raise FileNotFoundError(f"No checkpoint found for model ID {model_id}")
+                            ### Load checkpoint and map_location to handle loading models trained on different devices
+                            checkpoint = torch.load(checkpoint_path, map_location=torch.device('cuda' if torch.cuda.is_available() else 'cpu'))
+                            ### Dynamically import and instantiate the model class
+                            module_name = checkpoint['model_module']
+                            class_name = checkpoint['model_class']
+                            model_args = checkpoint['model_args']
+                            ### Import the module and get the class
+                            module = __import__(module_name, fromlist=[class_name])
+                            model_class = getattr(module, class_name)
+                            ### Create model instance using saved arguments
+                            model = model_class(model_args)
+                            try :
+                                model.load_state_dict(checkpoint['model_state_dict'])
+                                model = model.to(self.device)
+                            except :
+                                model = None
+                                print(f"    -> ERROR : could not manage to load model {model_name} for exp {model_id}")       
+                        
+                        if model is not None :
+                            # Testing routine   
+                            preds = []
+                            trues = []
+                            model.eval()
+                            with torch.no_grad():
+                                for i, (batch_x, batch_y, batch_x_mark, batch_y_mark) in enumerate(test_loader):
+                                    batch_x = batch_x.float().to(self.device)
+                                    batch_y = batch_y.float().to(self.device)
+                                    batch_x_mark = batch_x_mark.float().to(self.device)
+                                    batch_y_mark = batch_y_mark.float().to(self.device)
+
+                                    # decoder input
+                                    dec_inp = torch.zeros_like(batch_y[:, -test_args.pred_len:, :]).float()
+                                    dec_inp = torch.cat([batch_y[:, :test_args.label_len, :], dec_inp], dim=1).float().to(self.device)
+                                    # encoder - decoder
+                                    if test_args.use_amp:
+                                        with torch.cuda.amp.autocast():
+                                            outputs = model(batch_x, batch_x_mark, dec_inp, batch_y_mark)
+                                    else:
+                                        outputs = model(batch_x, batch_x_mark, dec_inp, batch_y_mark)
+
+                                    f_dim = -1 if test_args.features == 'MS' else 0
+                                    outputs = outputs[:, -test_args.pred_len:, :]
+                                    batch_y = batch_y[:, -test_args.pred_len:, :].to(self.device)
+                                    outputs = outputs.detach().cpu().numpy()
+                                    batch_y = batch_y.detach().cpu().numpy()
+                                    if test_data.scale and test_args.inverse:
+                                        outputs_shape = outputs.shape
+                                        batch_y_shape = batch_y.shape
+                                        outputs = test_data.inverse_transform(outputs.reshape(outputs_shape[0] * outputs_shape[1], -1)).reshape(outputs_shape)
+                                        batch_y = test_data.inverse_transform(batch_y.reshape(batch_y_shape[0] * batch_y_shape[1], -1)).reshape(batch_y_shape)
+                            
+                                    outputs = outputs[:, :, f_dim:]
+                                    batch_y = batch_y[:, :, f_dim:]
+
+                                    pred = outputs
+                                    true = batch_y
+
+                                    preds.append(pred)
+                                    trues.append(true)
+                                    if i % 20 == 0:
+                                        input = batch_x.detach().cpu().numpy()
+                                        if test_data.scale and test_args.inverse:
+                                            shape = input.shape
+                                            input = test_data.inverse_transform(input.reshape(shape[0] * shape[1], -1)).reshape(shape)
+                                        gt = np.concatenate((input[0, :, -1], true[0, :, -1]), axis=0)
+                                        pred = np.concatenate((input[0, :, -1], pred[0, :, -1]), axis=0)
+                                        visual(gt, pred, os.path.join(model_dir, str(i) + '.pdf'))
+
+                            preds = np.concatenate(preds, axis=0)
+                            trues = np.concatenate(trues, axis=0)
+                            preds = preds.reshape(-1, preds.shape[-2], preds.shape[-1])
+                            trues = trues.reshape(-1, trues.shape[-2], trues.shape[-1])
+                                
+                            mae, mse, rmse, mape, mspe, fde = metric(preds, trues)
+                            metrics = {'mae':mae, 'mse':mse, 'mape':mape, 'mspe':mspe, 'rmse':rmse, 'fde':fde}
+                            
+                            print("    Exp id : {:6} | model : {:26} | RMSE : {:.2e} | FDE {:.2e} ".format(
+                                model_id,
+                                model_name,
+                                rmse,
+                                fde))
+                            np.save(model_dir / 'metrics.npy', np.array([mae, mse, rmse, mape, mspe]))
+                            np.save(model_dir / 'pred.npy', preds)
+                            np.save(model_dir / 'true.npy', trues)
+                                                
+                            exp_log = pd.DataFrame(metrics, index = [model_id])
+                            if ldf is not None:
+                                ldf = pd.concat([ldf, exp_log])
+                            else :
+                                ldf = exp_log
+                            ldf.to_csv(log_filepath)                                      
+                                                    
+                
+        
