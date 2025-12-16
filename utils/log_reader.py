@@ -3,6 +3,7 @@ import pandas as pd
 import os
 from types import SimpleNamespace
 from data_provider.data_factory import data_provider
+from sklearn.linear_model import LinearRegression
 
 LOG_PATH = './logs'
 DATA_PATH = "./dataset/USC"
@@ -48,20 +49,42 @@ class BaselineScorer:
     def score_baseline(args, seq_len : int, pred_len : int):
         args.seq_len = seq_len
         args.pred_len = pred_len
-        uscds, _ = data_provider(args= args, flag = 'test', )
+        uscds_test, _ = data_provider(args= args, flag = 'test', )
         ### StandStill
-        ss_fde = np.sqrt(np.mean(uscds.data_y[:,-1,0]**2))
-        ss_rmse = np.sqrt(np.mean(uscds.data_y[:,:,0]**2))
+        ss_fde = np.sqrt(np.mean(uscds_test.data_y[:,-1,0]**2))
+        ss_rmse = np.sqrt(np.mean(uscds_test.data_y[:,:,0]**2))
         ### Constant Velocity
-        bl_cv_delta = (uscds.data_x[:,-1,0] - uscds.data_x[:,0,0]) / uscds.data_x.shape[1]
-        bl_cv_pred = np.repeat(uscds.data_x[:,-1,0].reshape(-1,1,1), uscds.data_y.shape[1], axis=1)
-        for i in range(uscds.data_y.shape[1]):
+        bl_cv_delta = (uscds_test.data_x[:,-1,0] - uscds_test.data_x[:,0,0]) / uscds_test.data_x.shape[1]
+        bl_cv_pred = np.repeat(uscds_test.data_x[:,-1,0].reshape(-1,1,1), uscds_test.data_y.shape[1], axis=1)
+        for i in range(uscds_test.data_y.shape[1]):
             bl_cv_pred[:,i,0] = (i+1) * bl_cv_delta 
-        cv_fde = np.sqrt(np.mean( (uscds.data_y[:,-1,0] - bl_cv_pred[:,-1,0])**2 ))
-        cv_rmse = np.sqrt(np.mean( (uscds.data_y[:,:,0] - bl_cv_pred[:,:,0])**2 ))
+        cv_fde = np.sqrt(np.mean( (uscds_test.data_y[:,-1,0] - bl_cv_pred[:,-1,0])**2 ))
+        cv_rmse = np.sqrt(np.mean( (uscds_test.data_y[:,:,0] - bl_cv_pred[:,:,0])**2 ))
+        ### Linear Regression
+        y_test = uscds_test.data_y[:,-1,0].reshape(-1,1)
+        X_test_s = uscds_test.data_x[:,:,0]
+        # X_test_ms = uscds_test.data_x.reshape(uscds_test.data_x.shape[0], uscds_test.data_x.shape[1] * uscds_test.data_x.shape[2])
+        
+        uscds_train, _ =  data_provider(args= args, flag = 'train', )
+        y_train = uscds_train.data_y[:,-1,0].reshape(-1,1)
+        X_train_s = uscds_train.data_x[:,:,0]
+        # X_train_ms = uscds_train.data_x.reshape(uscds_train.data_x.shape[0], uscds_train.data_x.shape[1] * uscds_train.data_x.shape[2])
+
+        # print(f"{uscds_train.data_x.shape=} - {y_train.shape=}, {X_train_s.shape=}, {X_train_ms.shape=}")
+        lr_s = LinearRegression().fit(X_train_s, y_train)
+        y_pred_s = lr_s.predict(X_test_s)        
+        rls_fde = np.sqrt(np.mean( (y_pred_s - y_test)**2 ))
+        
+        # lr_ms = LinearRegression().fit(X_train_ms, y_train)
+        # y_pred_ms = lr_ms.predict(X_test_ms)        
+        # rlms_fde = np.sqrt(np.mean( (y_pred_ms - y_test)**2 ))
         ### Concat
         bls = [{'model':'Baseline - StandStill', 'features':'S', 'time':f"{seq_len}-{pred_len}",'fde':ss_fde, 'rmse':ss_rmse},
-            {'model':'Baseline - ConstantVelocity', 'features':'S', 'time':f"{seq_len}-{pred_len}",'fde':cv_fde, 'rmse': cv_rmse}]
+            {'model':'Baseline - ConstantVelocity', 'features':'S', 'time':f"{seq_len}-{pred_len}",'fde':cv_fde, 'rmse': cv_rmse},
+            {'model':'Baseline - Linear Regression', 'features':'S', 'time':f"{seq_len}-{pred_len}",'fde': rls_fde, 'rmse': np.nan},
+            # {'model':'Baseline - Linear Regression', 'features':'MS', 'time':f"{seq_len}-{pred_len}",'fde': rlms_fde, 'rmse': np.nan},            
+            ]
+        
         
         return bls
       
